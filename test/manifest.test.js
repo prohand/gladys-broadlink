@@ -101,3 +101,7 @@ test('dynamic selects declare a source and no static options', () => {
     assert.equal(field.options, undefined, `field "${field.key}": source and options together`);
   }
 });
+
+test('Broadlink is declared local-only', () => {
+  assert.deepEqual(manifest.transports, ['local']);
+});

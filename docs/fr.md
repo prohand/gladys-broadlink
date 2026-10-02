@@ -37,6 +37,9 @@ Il faut **Gladys 5.1.0 ou plus récent**.
    réseau local ; les appareils trouvés apparaissent.
 3. Ajoutez ceux que vous voulez.
 
+Chaque appareil affiche un badge **local** quand il répond, ou
+**injoignable** quand il ne répond plus (débranché, IP changée…).
+
 Un appareil n'apparaît pas ? Il est sans doute sur un autre réseau / VLAN, ou
 le broadcast est filtré. Dans l'onglet **Configuration**, renseignez son
 adresse IP dans **Adresses IP des appareils** (plusieurs adresses séparées par

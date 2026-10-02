@@ -3,10 +3,10 @@
 // it can be unit-tested with a fake Gladys object and fake device clients.
 // -----------------------------------------------------------------------------
 
-import { createLogger } from '@gladysassistant/integration-sdk';
+import { createLogger, DEVICE_TRANSPORTS } from '@gladysassistant/integration-sdk';
 import { sendCode } from './broadlink/commands.js';
 import { RF_PROTOCOLS } from './broadlink/models.js';
-import { formatMac } from './broadlink/protocol.js';
+import { BroadlinkDeviceError, formatMac } from './broadlink/protocol.js';
 import { CodeStore, parseCode } from './codes.js';
 import { normalizeConfig } from './config.js';
 import { buildDiscoveredDevices, deviceName, getBlueprint } from './devices/index.js';
@@ -49,6 +49,8 @@ export class BroadlinkIntegration {
     this.discover = deps.discover ?? discoverDevices;
     this.learning = deps.learning ?? {};
     this.config = normalizeConfig();
+    // mac -> last transport published ('local' | 'unreachable').
+    this.transports = new Map();
   }
 
   setConfig(raw) {
@@ -67,6 +69,7 @@ export class BroadlinkIntegration {
   /** Scan the network, detect the optional features, then publish. */
   async scan() {
     const found = await this.discover(this.gladys, this.config);
+    const transports = [];
     for (const hello of found) {
       const info = this.registry.upsert(hello);
       if (!info) {
@@ -84,13 +87,54 @@ export class BroadlinkIntegration {
       try {
         const capabilities = await getBlueprint(info).probe(this.registry.getClient(info), info);
         this.registry.setCapabilities(info.mac, capabilities);
+        transports.push([info, true]);
       } catch (err) {
         logger.warn(`Cannot probe ${deviceName(info)} (${info.ip}): ${err.message}`);
+        transports.push([info, false]);
       }
     }
     logger.info(`${found.length} Broadlink device(s) found`);
     await this.publish();
+    await this.publishTransports(transports, { force: true });
     return found.length;
+  }
+
+  /**
+   * Transport badge shown by Gladys on the device cards: Broadlink is
+   * local-only, so a device is either 'local' (it answers) or 'unreachable'.
+   * Only changes are sent, unless `force` is set (after a scan).
+   * @param {Array<[import('./registry.js').DeviceInfo, boolean]>} entries
+   */
+  async publishTransports(entries, { force = false } = {}) {
+    const changed = [];
+    for (const [info, reachable] of entries) {
+      const transport = reachable ? DEVICE_TRANSPORTS.LOCAL : DEVICE_TRANSPORTS.UNREACHABLE;
+      if (!force && this.transports.get(info.mac) === transport) continue;
+      this.transports.set(info.mac, transport);
+      changed.push({ external_id: this.gladys.externalIds(info.kind, info.mac).device, transport });
+    }
+    if (changed.length === 0) return;
+    try {
+      await this.gladys.publishTransports(changed);
+    } catch (err) {
+      // A badge is cosmetic: never fail a command because of it.
+      logger.warn(`publishTransports failed: ${err.message}`);
+    }
+  }
+
+  /**
+   * Run a device operation and keep its transport badge up to date: any
+   * answer (even a device error) means 'local', no answer means 'unreachable'.
+   */
+  async track(info, operation) {
+    try {
+      const result = await operation();
+      await this.publishTransports([[info, true]]);
+      return result;
+    } catch (err) {
+      await this.publishTransports([[info, err instanceof BroadlinkDeviceError]]);
+      throw err;
+    }
   }
 
   /** Publish every known device (idempotent: upsert by external_id). */
@@ -113,13 +157,15 @@ export class BroadlinkIntegration {
     if (typeof blueprint.onSetValue !== 'function') {
       throw new Error(`${deviceName(info)} has nothing to control`);
     }
-    await blueprint.onSetValue(this.gladys, { feature, value, client, info, codes: this.codes });
+    await this.track(info, () =>
+      blueprint.onSetValue(this.gladys, { feature, value, client, info, codes: this.codes }),
+    );
   }
 
   async onPoll(device) {
     const { info, client, blueprint } = this.resolve(device);
     if (typeof blueprint.onPoll !== 'function') return;
-    await blueprint.onPoll(this.gladys, { client, info });
+    await this.track(info, () => blueprint.onPoll(this.gladys, { client, info }));
   }
 
   /** Remote chosen in an action or scene field (a device external_id). */

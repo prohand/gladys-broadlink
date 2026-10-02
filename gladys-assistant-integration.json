@@ -11,6 +11,7 @@
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-broadlink/main/cover.jpg",
   "categories": ["multimedia", "appliances", "energy"],
+  "transports": ["local"],
   "network_discovery": [
     {
       "type": "udp-active-broadcast",

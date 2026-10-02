@@ -265,3 +265,38 @@ test('locked or unsupported devices are not published', async () => {
   assert.deepEqual(gladys.lastDiscovered, []);
   assert.match(integration.listDevices().en, /locked/);
 });
+
+test('the scan marks the answering devices as local', async () => {
+  const { gladys, integration } = await createIntegration();
+  await integration.scan();
+  assert.deepEqual(
+    gladys.transports.map((t) => t.transport),
+    ['local', 'local'],
+  );
+  assert.ok(gladys.transports.every((t) => t.external_id.startsWith('ext:broadlink:')));
+});
+
+test('a device that stops answering is marked unreachable, then local again', async () => {
+  const { gladys, integration } = await createIntegration();
+  await integration.scan();
+  const device = gladys.lastDiscovered.find((d) => d.external_id.includes(PLUG_MAC));
+  const info = integration.registry.findByGladysDevice(gladys, device);
+  const client = integration.registry.getClient(info);
+  const realPort = client.port;
+
+  client.port = 9; // nothing answers there
+  client.timeout = 300;
+  await assert.rejects(() => integration.onPoll(device), /No answer/);
+  assert.deepEqual(gladys.transports.at(-1), {
+    external_id: device.external_id,
+    transport: 'unreachable',
+  });
+
+  client.port = realPort;
+  await integration.onPoll(device);
+  assert.equal(gladys.transports.at(-1).transport, 'local');
+
+  const count = gladys.transports.length;
+  await integration.onPoll(device);
+  assert.equal(gladys.transports.length, count, 'no badge update when nothing changed');
+});

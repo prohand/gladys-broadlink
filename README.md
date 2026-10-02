@@ -26,6 +26,8 @@ dépendance en plus du SDK).
   - action de scène « Envoyer un code Broadlink » (code par son nom,
     répétitions) ;
   - température / humidité (RM pro, RM4 + câble HTS2).
+- **Badge « local »** (manifest `transports: ["local"]`) : chaque appareil
+  est affiché « local » ou « injoignable » selon qu'il répond.
 - **Prises SP** (SP1, SP2, SP mini, SP3, SP3S, SP4…) : marche/arrêt avec
   retour d'état, puissance instantanée sur SP2S / SP3S / SP4B.
 - **Multiprise MP1** : 4 prises pilotables.

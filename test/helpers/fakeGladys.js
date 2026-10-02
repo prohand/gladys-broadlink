@@ -10,11 +10,13 @@ export function createFakeGladys({ scanReplies = [], scanError = null } = {}) {
   const published = [];
   const discovered = [];
   const scans = [];
+  const transports = [];
 
   return {
     published,
     discovered,
     scans,
+    transports,
 
     externalIds(type, platformId) {
       const device = `ext:broadlink:${type}:${platformId}`;
@@ -42,6 +44,10 @@ export function createFakeGladys({ scanReplies = [], scanError = null } = {}) {
       for (const s of states) {
         published.push({ featureExternalId: s.device_feature_external_id, state: s.state });
       }
+    },
+
+    async publishTransports(entries) {
+      transports.push(...entries);
     },
 
     /** Last list given to publishDiscoveredDevices. */

@@ -36,6 +36,9 @@ port 80).
    network; the devices found show up.
 3. Add the ones you want.
 
+Every device shows a **local** badge when it answers, or **unreachable**
+when it stops answering (unplugged, IP changed…).
+
 A device does not show up? It is probably on another network / VLAN, or the
 broadcast is filtered. In the **Configuration** tab, type its IP address in
 **Device IP addresses** (several addresses separated by commas), save, then
