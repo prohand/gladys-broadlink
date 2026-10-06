@@ -6,6 +6,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-06
+
 ### Added
 
 - `SECURITY.md`: how to report a vulnerability.
@@ -30,5 +32,6 @@ First public release.
 
 - Add Broadlink external integration for Gladys Assistant
 
-[Unreleased]: https://github.com/prohand/gladys-broadlink/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-broadlink/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/prohand/gladys-broadlink/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/prohand/gladys-broadlink/releases/tag/v1.0.1
