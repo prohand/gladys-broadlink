@@ -64,7 +64,7 @@ before(async () => {
 
 after(() => Promise.all([rm.close(), plug.close()]));
 
-async function createIntegration(gladysOptions = {}) {
+async function createIntegration(gladysOptions = {}, deps = {}) {
   const gladys = createFakeGladys({
     scanReplies: [
       {
@@ -92,6 +92,7 @@ async function createIntegration(gladysOptions = {}) {
     registry,
     codes,
     learning: { intervalMs: 10, timeoutMs: 2000 },
+    ...deps,
   });
   return { gladys, integration };
 }
@@ -113,7 +114,10 @@ test('scan publishes the supported devices with their detected features', async 
     remote.features.map((f) => f.category),
     [DEVICE_FEATURE_CATEGORIES.TEMPERATURE_SENSOR, DEVICE_FEATURE_CATEGORIES.HUMIDITY_SENSOR],
   );
-  assert.ok(remote.poll_frequency > 0);
+  // Gladys only accepts its own ticks, in milliseconds, and only polls a device
+  // that asks for it: 60 (seconds) once emptied the whole Discovery tab.
+  assert.equal(remote.poll_frequency, 60000);
+  assert.equal(remote.should_poll, true);
   assert.ok(remote.params.some((p) => p.name === 'DEVTYPE' && p.value === '0x5213'));
 
   const smartPlug = devices.find((d) => d.external_id.includes(PLUG_MAC));
@@ -299,4 +303,51 @@ test('a device that stops answering is marked unreachable, then local again', as
   const count = gladys.transports.length;
   await integration.onPoll(device);
   assert.equal(gladys.transports.length, count, 'no badge update when nothing changed');
+});
+
+test('every polled device carries a poll frequency Gladys accepts', async () => {
+  const { gladys, integration } = await createIntegration();
+  integration.setConfig({ poll_frequency: 300 });
+  await integration.scan();
+  for (const device of gladys.lastDiscovered.filter((d) => d.poll_frequency !== undefined)) {
+    assert.ok([1000, 2000, 10000, 15000, 30000, 60000].includes(device.poll_frequency));
+    assert.equal(device.should_poll, true);
+  }
+});
+
+test('the polls inside the configured interval read nothing', async () => {
+  let now = 0;
+  const { gladys, integration } = await createIntegration({}, { now: () => now });
+  integration.setConfig({ poll_frequency: 300 });
+  await integration.scan();
+  const device = gladys.lastDiscovered.find((d) => d.external_id.includes(PLUG_MAC));
+
+  await integration.onPoll(device);
+  const afterFirst = gladys.published.length;
+  now += 60_000;
+  await integration.onPoll(device);
+  assert.equal(gladys.published.length, afterFirst, 'one minute later: skipped');
+  now += 240_000;
+  await integration.onPoll(device);
+  assert.ok(gladys.published.length > afterFirst, 'five minutes later: read again');
+});
+
+test('a code sent to a remote that does not answer marks it unreachable', async () => {
+  const { gladys, integration } = await createIntegration();
+  await integration.scan();
+  const device = gladys.lastDiscovered.find((d) => d.external_id.includes(RM_MAC));
+  await integration.importCode({
+    device: device.external_id,
+    name: 'tv',
+    code: LEARNED.toString('base64'),
+  });
+  const info = integration.registry.findByGladysDevice(gladys, device);
+  const client = integration.registry.getClient(info);
+  client.port = 9;
+  client.timeout = 300;
+  await assert.rejects(() => integration.sendCode({ device: device.external_id, name: 'tv' }));
+  assert.deepEqual(gladys.transports.at(-1), {
+    external_id: device.external_id,
+    transport: 'unreachable',
+  });
 });

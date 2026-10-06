@@ -12,6 +12,7 @@
 //   - onPoll(gladys, {...})     (optional)  : periodic read
 // -----------------------------------------------------------------------------
 
+import { gladysPollFrequency } from '../config.js';
 import { buildParams } from '../registry.js';
 import { plug } from './plug.js';
 import { remote } from './remote.js';
@@ -47,7 +48,13 @@ export function buildDevice(gladys, info, ctx) {
     params: buildParams(info),
     features,
   };
-  if (pollFrequency) device.poll_frequency = pollFrequency;
+  if (pollFrequency) {
+    // `pollFrequency` is the configured interval in seconds: Gladys wants one of
+    // its own ticks, in milliseconds, and only polls a device that also asks
+    // for it with `should_poll` (false by default in the core).
+    device.should_poll = true;
+    device.poll_frequency = gladysPollFrequency(pollFrequency);
+  }
   return device;
 }
 

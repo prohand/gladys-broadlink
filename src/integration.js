@@ -8,7 +8,7 @@ import { sendCode } from './broadlink/commands.js';
 import { RF_PROTOCOLS } from './broadlink/models.js';
 import { BroadlinkDeviceError, formatMac } from './broadlink/protocol.js';
 import { CodeStore, parseCode } from './codes.js';
-import { normalizeConfig } from './config.js';
+import { gladysPollFrequency, normalizeConfig } from './config.js';
 import { buildDiscoveredDevices, deviceName, getBlueprint } from './devices/index.js';
 import { discoverDevices } from './discovery.js';
 import { learnIrCode, learnRfCode } from './learning.js';
@@ -51,10 +51,16 @@ export class BroadlinkIntegration {
     this.config = normalizeConfig();
     // mac -> last transport published ('local' | 'unreachable').
     this.transports = new Map();
+    this.now = deps.now ?? (() => Date.now());
+    // Last effective read of each device (mac -> ms), to honour an interval
+    // longer than the one-minute Gladys tick.
+    this.lastPollAt = new Map();
   }
 
   setConfig(raw) {
     this.config = normalizeConfig(raw);
+    // A new interval applies from the next tick.
+    this.lastPollAt.clear();
   }
 
   get context() {
@@ -165,7 +171,17 @@ export class BroadlinkIntegration {
   async onPoll(device) {
     const { info, client, blueprint } = this.resolve(device);
     if (typeof blueprint.onPoll !== 'function') return;
+    // Gladys ticks at most every minute: skip the ticks that come before the
+    // configured interval. Half a tick of tolerance, since the core's clock
+    // routinely lands a few milliseconds short.
+    const intervalMs = this.config.poll_frequency * 1000;
+    const tolerance = gladysPollFrequency(this.config.poll_frequency) / 2;
+    const last = this.lastPollAt.get(info.mac);
+    if (last !== undefined && this.now() - last < intervalMs - tolerance) return;
     await this.track(info, () => blueprint.onPoll(this.gladys, { client, info }));
+    // Recorded after a successful read only: a failed one is retried on the
+    // next tick instead of a whole interval later.
+    this.lastPollAt.set(info.mac, this.now());
   }
 
   /** Remote chosen in an action or scene field (a device external_id). */
@@ -218,9 +234,13 @@ export class BroadlinkIntegration {
       throw new Error(`No code named "${name}" on ${deviceName(info)}`);
     }
     const times = Math.min(10, Math.max(1, Math.trunc(Number(repeat) || 1)));
-    for (let i = 0; i < times; i += 1) {
-      await sendCode(client, info.protocol, entry.code);
-    }
+    // Through track(), like any command: an RM that does not answer flips its
+    // transport badge to "unreachable".
+    await this.track(info, async () => {
+      for (let i = 0; i < times; i += 1) {
+        await sendCode(client, info.protocol, entry.code);
+      }
+    });
     return {
       en: `Code "${entry.name}" sent.`,
       fr: `Code « ${entry.name} » envoyé.`,

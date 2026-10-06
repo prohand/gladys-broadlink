@@ -23,6 +23,26 @@ export const DEFAULT_CONFIG = {
 
 export const POLL_FREQUENCY_BOUNDS = { min: 10, max: 3600 };
 
+// Gladys stores a device `poll_frequency` as an ENUM of MILLISECONDS
+// (DEVICE_POLL_FREQUENCIES of the core) and rejects the WHOLE discovery batch
+// with "invalid poll frequency" for any other value: publishing the configured
+// interval (seconds) as is left the Discovery tab empty. The slowest tick is one
+// minute; a longer interval is honoured by BroadlinkIntegration.onPoll, which
+// skips the ticks that come too early.
+export const GLADYS_POLL_FREQUENCIES_MS = [1000, 2000, 10000, 15000, 30000, 60000];
+
+/**
+ * The Gladys tick a device is registered on: the slowest accepted value that is
+ * not slower than the configured interval.
+ * @param {number} seconds configured interval
+ * @returns {number} one of GLADYS_POLL_FREQUENCIES_MS
+ */
+export function gladysPollFrequency(seconds) {
+  const wanted = Number(seconds) * 1000;
+  const fitting = GLADYS_POLL_FREQUENCIES_MS.filter((ms) => ms <= wanted);
+  return fitting.length > 0 ? fitting[fitting.length - 1] : GLADYS_POLL_FREQUENCIES_MS[0];
+}
+
 /** "192.168.1.20, 192.168.1.21" -> ['192.168.1.20', '192.168.1.21'] (invalid entries dropped) */
 export function parseHosts(hosts) {
   return [
