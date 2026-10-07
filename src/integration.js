@@ -197,7 +197,7 @@ export class BroadlinkIntegration {
 
   async learnCode({ device, name, signal = 'ir' }) {
     const { info, client } = this.resolveRemote(device);
-    if (this.codes.get(info.mac, name)) {
+    if (this.codes.findByName(info.mac, name)) {
       throw new Error(`A code named "${name}" already exists on this remote`);
     }
     let code;

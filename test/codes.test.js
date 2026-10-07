@@ -45,3 +45,26 @@ test('the store persists codes per device and refuses duplicates', async () => {
   const file = JSON.parse(await readFile(path.join(dir, 'codes.json'), 'utf8'));
   assert.deepEqual(file[MAC], {});
 });
+
+test('names that only differ by a symbol get their own key', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'broadlink-codes-'));
+  const store = new CodeStore(dir);
+  const up = Buffer.from('26000c00aabbccdd', 'hex');
+  const down = Buffer.from('26000c0011223344', 'hex');
+
+  assert.equal((await store.add(MAC, 'Vol+', up)).key, 'vol');
+  assert.equal((await store.add(MAC, 'Vol-', down)).key, 'vol-2');
+  await assert.rejects(store.add(MAC, 'vol-', down), /already exists/);
+
+  // Looked up by name first: each one sends its own code.
+  assert.deepEqual(store.get(MAC, 'Vol+').code, up);
+  assert.deepEqual(store.get(MAC, 'VOL-').code, down);
+  // A key still works where no name matches, as before.
+  assert.deepEqual(store.get(MAC, 'vol').code, up);
+
+  assert.equal(await store.remove(MAC, 'Vol-'), true);
+  // Gone means gone: never the other code that shares its slug.
+  assert.equal(store.get(MAC, 'Vol-'), undefined);
+  assert.equal(await store.remove(MAC, 'Vol-'), false);
+  assert.equal(store.list(MAC).length, 1);
+});

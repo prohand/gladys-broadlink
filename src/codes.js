@@ -84,10 +84,24 @@ export class CodeStore {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  /** Find a code by its name (case-insensitive) or its key. */
+  /**
+   * Find a code by its name (case-insensitive), else by its exact key.
+   *
+   * Never by the slug of what was typed: two names can share one (`Vol+` and
+   * `Vol-` both slug to `vol`, the second is stored under `vol-2`), and a slug
+   * match would then send, or delete, the other code.
+   */
   get(mac, name) {
-    const key = slugify(name);
-    return this.list(mac).find((entry) => entry.key === key);
+    const key = String(name ?? '').trim();
+    return this.findByName(mac, name) ?? this.list(mac).find((entry) => entry.key === key);
+  }
+
+  /** The code carrying exactly this name, case aside. */
+  findByName(mac, name) {
+    const wanted = String(name ?? '')
+      .trim()
+      .toLowerCase();
+    return this.list(mac).find((entry) => entry.name.toLowerCase() === wanted);
   }
 
   /**
@@ -97,13 +111,22 @@ export class CodeStore {
    */
   async add(mac, name, code) {
     const cleanName = String(name ?? '').trim();
-    const key = slugify(cleanName);
-    if (!key) {
+    const slug = slugify(cleanName);
+    if (!slug) {
       throw new Error('The code name must contain at least one letter or digit');
     }
+    const existing = this.findByName(mac, cleanName);
+    if (existing) {
+      throw new Error(`A code named "${existing.name}" already exists on this remote`);
+    }
     const deviceCodes = (this.codes[normalizeMac(mac)] ??= {});
-    if (deviceCodes[key]) {
-      throw new Error(`A code named "${deviceCodes[key].name}" already exists on this remote`);
+    // A remote is full of names that only differ by a symbol (`Vol+` / `Vol-`,
+    // `CH+` / `CH-`): the second one gets a numbered key instead of being refused.
+    // The key becomes a feature external_id, so an existing one never moves.
+    let key = slug;
+    for (let index = 2; deviceCodes[key]; index += 1) {
+      const suffix = `-${index}`;
+      key = `${slug.slice(0, MAX_CODE_NAME_LENGTH - suffix.length)}${suffix}`;
     }
     deviceCodes[key] = {
       name: cleanName.slice(0, MAX_CODE_NAME_LENGTH),
@@ -117,9 +140,9 @@ export class CodeStore {
   /** @returns {Promise<boolean>} false when the code does not exist */
   async remove(mac, name) {
     const deviceCodes = this.codes[normalizeMac(mac)];
-    const key = slugify(name);
-    if (!deviceCodes?.[key]) return false;
-    delete deviceCodes[key];
+    const entry = this.get(mac, name);
+    if (!entry || !deviceCodes?.[entry.key]) return false;
+    delete deviceCodes[entry.key];
     await this.save();
     return true;
   }
