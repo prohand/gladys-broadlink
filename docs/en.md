@@ -27,7 +27,9 @@ port 80).
    off**. A locked device refuses every local command: the integration
    ignores it.
 3. Recommended: give each device a **fixed IP** (DHCP reservation on your
-   router).
+   router). Without one, when a device stops answering the integration scans
+   the network again on its own (at most once every 10 minutes) to find its
+   new address.
 
 ## Add the devices
 

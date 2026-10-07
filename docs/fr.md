@@ -28,7 +28,9 @@ Il faut **Gladys 5.1.0 ou plus récent**.
    **désactivez « Verrouiller l'appareil »**. Un appareil verrouillé refuse
    toute commande locale : l'intégration l'ignore.
 3. Conseillé : donnez une **IP fixe** à chaque appareil (réservation DHCP sur
-   votre box ou votre routeur).
+   votre box ou votre routeur). Sans elle, quand un appareil ne répond plus,
+   l'intégration relance un scan d'elle-même (au plus une fois toutes les
+   10 minutes) pour retrouver sa nouvelle adresse.
 
 ## Ajouter les appareils
 
