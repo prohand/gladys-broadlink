@@ -6,8 +6,8 @@
     "en": "Local control of Broadlink devices: RM remotes (IR/RF), SP plugs, MP1 strips, A1 sensors.",
     "fr": "Broadlink en local : télécommandes RM (IR/RF), prises SP, multiprises MP1, capteurs A1."
   },
-  "version": "1.1.0",
-  "docker_image": "ghcr.io/prohand/gladys-broadlink:1.1.0",
+  "version": "1.2.0",
+  "docker_image": "ghcr.io/prohand/gladys-broadlink:1.2.0",
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-broadlink/main/cover.jpg",
   "categories": ["multimedia", "appliances", "energy"],
