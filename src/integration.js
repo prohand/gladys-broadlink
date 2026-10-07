@@ -31,6 +31,14 @@ export const SCENE_ACTIONS = {
   send_code: 'sendCode',
 };
 
+// A device that stops answering has often only changed address (a DHCP lease
+// renewed after a router reboot): one scan finds it again. Not more often than
+// this, so an unplugged device does not keep the network busy.
+export const RESCAN_MIN_INTERVAL_MS = 10 * 60 * 1000;
+// Wait a little before scanning: the command that failed is acked first, and a
+// device that is rebooting has time to come back.
+export const RESCAN_DELAY_MS = 30 * 1000;
+
 const DISCOVERY_HINT = {
   en: 'Open the Discovery tab to add or update the device.',
   fr: "Ouvrez l'onglet Découverte pour ajouter ou mettre à jour l'appareil.",
@@ -40,7 +48,8 @@ export class BroadlinkIntegration {
   /**
    * @param {object} gladys SDK instance (or a fake one in tests)
    * @param {{ registry?: DeviceRegistry, codes?: CodeStore,
-   *           discover?: typeof discoverDevices, learning?: object }} [deps]
+   *           discover?: typeof discoverDevices, learning?: object,
+   *           now?: () => number, rescanDelayMs?: number }} [deps]
    */
   constructor(gladys, deps = {}) {
     this.gladys = gladys;
@@ -55,6 +64,9 @@ export class BroadlinkIntegration {
     // Last effective read of each device (mac -> ms), to honour an interval
     // longer than the one-minute Gladys tick.
     this.lastPollAt = new Map();
+    this.lastRescanAt = null;
+    this.rescan = null;
+    this.rescanDelayMs = deps.rescanDelayMs ?? RESCAN_DELAY_MS;
   }
 
   setConfig(raw) {
@@ -138,9 +150,35 @@ export class BroadlinkIntegration {
       await this.publishTransports([[info, true]]);
       return result;
     } catch (err) {
-      await this.publishTransports([[info, err instanceof BroadlinkDeviceError]]);
+      const answered = err instanceof BroadlinkDeviceError;
+      await this.publishTransports([[info, answered]]);
+      if (!answered) {
+        this.scheduleRescan(info);
+      }
       throw err;
     }
+  }
+
+  /**
+   * Scan the network again, in the background, after a device stopped
+   * answering. The registry follows a device by its MAC, so the scan updates
+   * its address and the next command reaches it.
+   * @returns {Promise<void>|null} the scan started, or null when throttled
+   */
+  scheduleRescan(info) {
+    const now = this.now();
+    if (this.lastRescanAt !== null && now - this.lastRescanAt < RESCAN_MIN_INTERVAL_MS) {
+      return null;
+    }
+    this.lastRescanAt = now;
+    logger.info(`${deviceName(info)} did not answer: scanning the network again`);
+    this.rescan = new Promise((resolve) => {
+      setTimeout(resolve, this.rescanDelayMs).unref?.();
+    })
+      .then(() => this.scan())
+      .then(() => undefined)
+      .catch((err) => logger.warn(`Rescan after an unreachable device failed: ${err.message}`));
+    return this.rescan;
   }
 
   /** Publish every known device (idempotent: upsert by external_id). */

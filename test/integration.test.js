@@ -351,3 +351,31 @@ test('a code sent to a remote that does not answer marks it unreachable', async 
     transport: 'unreachable',
   });
 });
+
+test('a device that stops answering triggers one rescan that finds its new address', async () => {
+  let now = 1_000_000;
+  const { gladys, integration } = await createIntegration({}, { now: () => now, rescanDelayMs: 0 });
+  await integration.scan();
+  const device = gladys.lastDiscovered.find((d) => d.external_id.includes(PLUG_MAC));
+  const info = integration.registry.findByGladysDevice(gladys, device);
+  // The address the device had before its DHCP lease changed.
+  integration.registry.upsert({ ...info, ip: '127.0.0.2' });
+  const stale = integration.registry.getClient(
+    integration.registry.findByGladysDevice(gladys, device),
+  );
+  stale.timeout = 300;
+
+  await assert.rejects(() => integration.onPoll(device), /No answer/);
+  const firstRescan = integration.rescan;
+  assert.ok(firstRescan, 'a rescan was started');
+  await firstRescan;
+  assert.equal(integration.registry.findByGladysDevice(gladys, device).ip, '127.0.0.1');
+  await integration.onPoll(device);
+  assert.equal(gladys.transports.at(-1).transport, 'local');
+
+  // Throttled: a second failure within ten minutes does not scan again.
+  assert.equal(integration.scheduleRescan(info), null);
+  now += 10 * 60 * 1000;
+  assert.ok(integration.scheduleRescan(info));
+  await integration.rescan;
+});
