@@ -5,13 +5,18 @@
 // protocol name from models.js. Payload layouts follow python-broadlink.
 // -----------------------------------------------------------------------------
 
-import { PACKET_TYPES } from './protocol.js';
+import { BroadlinkProtocolError, PACKET_TYPES } from './protocol.js';
 
 const { COMMAND, SP1_SET_POWER } = PACKET_TYPES;
 
 // =============================================================================
 // Universal remotes (RM family)
 // =============================================================================
+
+// A code is emitted by the RM before it answers, and a long RF code takes a
+// while: wait longer than for a read (twice the client timeout), and never
+// re-send it (see udpRequest).
+export const SEND_CODE_TIMEOUT_FACTOR = 2;
 
 // Old firmwares (RM mini 3 / RM pro) vs new ones (RM4, "rmminib"), which wrap
 // every command with a 2-byte length prefix.
@@ -35,24 +40,32 @@ const REMOTE_COMMANDS = {
  * @param {string} protocol
  * @param {number} command
  * @param {Buffer} [data]
+ * @param {{ retransmit?: boolean, timeout?: number }} [options] see udpRequest
  */
-export async function remoteCommand(client, protocol, command, data = Buffer.alloc(0)) {
+export async function remoteCommand(client, protocol, command, data = Buffer.alloc(0), options) {
   if (WRAPPED_REMOTE_PROTOCOLS.has(protocol)) {
     const header = Buffer.alloc(6);
     header.writeUInt16LE(data.length + 4, 0);
     header.writeUInt32LE(command, 2);
-    const response = await client.send(COMMAND, Buffer.concat([header, data]));
+    const response = await client.send(COMMAND, Buffer.concat([header, data]), options);
+    if (response.length < 2) {
+      throw new BroadlinkProtocolError(`Broadlink answer too short (${response.length} bytes)`);
+    }
     const length = response.readUInt16LE(0);
     return response.subarray(6, length + 2);
   }
   const header = Buffer.alloc(4);
   header.writeUInt32LE(command, 0);
-  const response = await client.send(COMMAND, Buffer.concat([header, data]));
+  const response = await client.send(COMMAND, Buffer.concat([header, data]), options);
   return response.subarray(4);
 }
 
+/** Emit an IR/RF code: one transmission only, a lost answer must not fire it twice. */
 export function sendCode(client, protocol, code) {
-  return remoteCommand(client, protocol, REMOTE_COMMANDS.SEND_DATA, code);
+  return remoteCommand(client, protocol, REMOTE_COMMANDS.SEND_DATA, code, {
+    retransmit: false,
+    timeout: client.timeout * SEND_CODE_TIMEOUT_FACTOR,
+  });
 }
 
 export function enterLearning(client, protocol) {

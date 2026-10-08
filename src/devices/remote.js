@@ -1,8 +1,8 @@
 // -----------------------------------------------------------------------------
 // Device type: UNIVERSAL REMOTE (RM mini 3, RM pro, RM4 mini, RM4 pro...)
 //
-// - every IR/RF code learned or imported on the remote becomes a "push button"
-//   feature: turning it ON sends the code, then it falls back to OFF;
+// - every IR/RF code learned or imported on the remote becomes a PUSH BUTTON
+//   feature (`button`/`push`): one press sends the code once;
 // - the temperature / humidity sensor (RM pro, RM4 + HTS2 cable) is exposed
 //   when the device reports it, and refreshed by polling.
 // -----------------------------------------------------------------------------
@@ -49,11 +49,19 @@ export const remote = {
 
   buildFeatures(gladys, info, { config, codes }) {
     const ids = gladys.externalIds(DEVICE_TYPE, info.mac);
+    // `button`/`push`, never `switch`/`binary`: Gladys' scene action "turn on
+    // the switches" and the voice assistants resolve a device to its FIRST
+    // `switch`/`binary` feature, so with the codes published as switches
+    // "turn the living room remote on" sent whichever code came first (Vol+).
+    // A push button is also what the dashboard should draw: one press, one code.
+    // The external_id is unchanged (`code-<key>`): an existing device keeps its
+    // feature once the user clicks "Update" in the Discovery tab.
     const features = codes.list(info.mac).map((entry) => ({
       name: entry.name,
       external_id: ids.feature(`${FEATURE.CODE_PREFIX}${entry.key}`),
-      category: DEVICE_FEATURE_CATEGORIES.SWITCH,
-      type: DEVICE_FEATURE_TYPES.SWITCH.BINARY,
+      category: DEVICE_FEATURE_CATEGORIES.BUTTON,
+      type: DEVICE_FEATURE_TYPES.BUTTON.PUSH,
+      // Gladys requires bounds on every feature; a press carries 1.
       min: 0,
       max: 1,
       read_only: false,
@@ -102,13 +110,16 @@ export const remote = {
     if (!entry) {
       throw new Error(`Unknown code feature ${feature.external_id}`);
     }
-    if (value !== 1) {
-      // Releasing the button does nothing: a code is a one-shot command.
+    // The dashboard's push button sends 1. A 0 can only come from a device not
+    // updated yet in the Discovery tab, whose feature is still an on/off
+    // switch being turned off: a code is a one-shot command, nothing to send.
+    if (Number(value) === 0) {
       return;
     }
     logger.info(`Sending code "${entry.name}" with ${info.mac}`);
     await sendCode(client, info.protocol, entry.code);
-    // Momentary button: back to OFF once the code is sent.
+    // Back to 0 once the code is sent: harmless on a push button, and what
+    // lets a not-yet-updated switch feature fall back to OFF.
     await gladys.publishState(feature.external_id, 0);
   },
 

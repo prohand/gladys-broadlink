@@ -6,7 +6,8 @@
 import { createLogger, DEVICE_TRANSPORTS } from '@gladysassistant/integration-sdk';
 import { sendCode } from './broadlink/commands.js';
 import { RF_PROTOCOLS } from './broadlink/models.js';
-import { BroadlinkDeviceError, formatMac } from './broadlink/protocol.js';
+import { BroadlinkDeviceError, BroadlinkProtocolError, formatMac } from './broadlink/protocol.js';
+import { isNoAnswerError } from './broadlink/udp.js';
 import { CodeStore, parseCode } from './codes.js';
 import { gladysPollFrequency, normalizeConfig } from './config.js';
 import { buildDiscoveredDevices, deviceName, getBlueprint } from './devices/index.js';
@@ -84,6 +85,27 @@ export class BroadlinkIntegration {
     for (const device of devices) this.registry.upsertFromGladysDevice(device);
   }
 
+  /**
+   * A device was just created (or updated) in Gladys: register it and read it
+   * at once. Gladys drops the states published before the device existed, so
+   * waiting for the next poll left it on "no recent value" for up to a whole
+   * interval — and a device deleted then re-created kept its old `lastPollAt`,
+   * which made that first poll a skipped one too.
+   * Never throws: a device that does not answer right now is not a reason to
+   * fail its creation; the regular polls take over.
+   */
+  async refreshCreatedDevice(device) {
+    try {
+      this.loadCreatedDevices([device]);
+      const info = this.registry.findByGladysDevice(this.gladys, device);
+      if (!info) return;
+      this.lastPollAt.delete(info.mac);
+      await this.onPoll(device);
+    } catch (err) {
+      logger.warn(`First read of ${device.external_id} failed: ${err.message}`);
+    }
+  }
+
   /** Scan the network, detect the optional features, then publish. */
   async scan() {
     const found = await this.discover(this.gladys, this.config);
@@ -143,6 +165,13 @@ export class BroadlinkIntegration {
   /**
    * Run a device operation and keep its transport badge up to date: any
    * answer (even a device error) means 'local', no answer means 'unreachable'.
+   *
+   * Only a missing answer is worth a rescan. An answer that cannot be parsed
+   * (short packet, bad checksum) came FROM the device at the address we know:
+   * flagging it unreachable and scanning the whole network for it again would
+   * be wrong, and repeated on every poll while the glitch lasts. Any other
+   * failure (a bug, an unknown feature) says nothing about the device: the
+   * badge is left as it is.
    */
   async track(info, operation) {
     try {
@@ -150,10 +179,14 @@ export class BroadlinkIntegration {
       await this.publishTransports([[info, true]]);
       return result;
     } catch (err) {
-      const answered = err instanceof BroadlinkDeviceError;
-      await this.publishTransports([[info, answered]]);
-      if (!answered) {
+      if (isNoAnswerError(err)) {
+        await this.publishTransports([[info, false]]);
         this.scheduleRescan(info);
+      } else if (err instanceof BroadlinkDeviceError || err instanceof BroadlinkProtocolError) {
+        if (err instanceof BroadlinkProtocolError) {
+          logger.warn(`${deviceName(info)} (${info.ip}) sent an unreadable answer: ${err.message}`);
+        }
+        await this.publishTransports([[info, true]]);
       }
       throw err;
     }

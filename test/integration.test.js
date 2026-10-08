@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { DEVICE_FEATURE_CATEGORIES } from '@gladysassistant/integration-sdk';
+import { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } from '@gladysassistant/integration-sdk';
 import { BroadlinkClient } from '../src/broadlink/client.js';
 import { CodeStore } from '../src/codes.js';
 import { discoverDevices } from '../src/discovery.js';
@@ -196,13 +196,33 @@ test('learning an IR code adds a button feature that sends it', async () => {
   const remote = gladys.lastDiscovered.find((d) => d.external_id === remoteId);
   const button = remote.features.find((f) => f.name === 'TV on');
   assert.ok(button, 'the learned code becomes a feature');
-  assert.equal(button.category, DEVICE_FEATURE_CATEGORIES.SWITCH);
+  // A push button, never a switch: scenes and assistants "turn on" the FIRST
+  // switch/binary of a device, which would send a random code.
+  assert.equal(button.category, DEVICE_FEATURE_CATEGORIES.BUTTON);
+  assert.equal(button.type, DEVICE_FEATURE_TYPES.BUTTON.PUSH);
+  assert.equal(button.external_id, `${remoteId}:code-tv-on`, 'external_id unchanged');
+  assert.equal(button.min, 0);
+  assert.equal(button.max, 1);
+  assert.equal(button.read_only, false);
+  assert.ok(
+    remote.features.every(
+      (f) =>
+        f.category !== DEVICE_FEATURE_CATEGORIES.SWITCH ||
+        f.type !== DEVICE_FEATURE_TYPES.SWITCH.BINARY,
+    ),
+  );
 
+  // The dashboard push button sends 1.
   await integration.onSetValue(remote, button, 1);
   const sent = rm.received.at(-1).payload;
   assert.equal(sent.readUInt32LE(2), 0x02, 'send command');
   assert.deepEqual(sent.subarray(6, 6 + LEARNED.length), LEARNED);
   assert.deepEqual(gladys.published.at(-1), { featureExternalId: button.external_id, state: 0 });
+
+  // A 0 (a not-yet-updated switch turned off) sends nothing.
+  const count = rm.received.length;
+  await integration.onSetValue(remote, button, 0);
+  assert.equal(rm.received.length, count);
 });
 
 test('codes can be imported, listed, sent and deleted through the actions', async () => {
@@ -378,4 +398,57 @@ test('a device that stops answering triggers one rescan that finds its new addre
   now += 10 * 60 * 1000;
   assert.ok(integration.scheduleRescan(info));
   await integration.rescan;
+});
+
+test('a device created (or re-created) in Gladys is read at once', async () => {
+  const now = 1_000_000;
+  const { gladys, integration } = await createIntegration({}, { now: () => now });
+  integration.setConfig({ poll_frequency: 300 });
+  await integration.scan();
+  const device = gladys.lastDiscovered.find((d) => d.external_id.includes(PLUG_MAC));
+
+  await integration.onPoll(device);
+  const afterPoll = gladys.published.length;
+  // Same instant: a regular tick is skipped, the interval has not elapsed...
+  await integration.onPoll(device);
+  assert.equal(gladys.published.length, afterPoll);
+  // ...but the device was just (re-)created: its states before that were
+  // dropped by Gladys, it must be read now.
+  await integration.refreshCreatedDevice(device);
+  assert.equal(gladys.published.length, afterPoll + 2);
+  await integration.refreshCreatedDevice({ ...device });
+  assert.equal(gladys.published.length, afterPoll + 4, 'onDeviceUpdated reads it too');
+});
+
+test('a created device that does not answer does not fail its creation', async () => {
+  const { gladys, integration } = await createIntegration({}, { rescanDelayMs: 60_000 });
+  await integration.scan();
+  const device = gladys.lastDiscovered.find((d) => d.external_id.includes(PLUG_MAC));
+  const client = integration.registry.getClient(
+    integration.registry.findByGladysDevice(gladys, device),
+  );
+  client.port = 9;
+  client.timeout = 200;
+  await integration.refreshCreatedDevice(device);
+  assert.equal(gladys.transports.at(-1).transport, 'unreachable');
+});
+
+test('an unreadable answer is not an unreachable device: no rescan', async () => {
+  const { gladys, integration } = await createIntegration({}, { rescanDelayMs: 0 });
+  await integration.scan();
+  const device = gladys.lastDiscovered.find((d) => d.external_id.includes(PLUG_MAC));
+  const client = integration.registry.getClient(
+    integration.registry.findByGladysDevice(gladys, device),
+  );
+
+  // Too short, then a bad checksum: the device answered, at its address.
+  client.request = async () => Buffer.alloc(10);
+  await assert.rejects(() => integration.onPoll(device), /too short/);
+  const corrupted = Buffer.alloc(0x40);
+  corrupted.writeUInt16LE(0x1234, 0x20);
+  client.request = async () => corrupted;
+  await assert.rejects(() => integration.onPoll(device), /checksum/);
+
+  assert.equal(integration.rescan, null, 'no network scan');
+  assert.equal(gladys.transports.at(-1).transport, 'local');
 });

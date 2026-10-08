@@ -53,7 +53,12 @@ export class BroadlinkClient {
     return run;
   }
 
-  async rawSend(packetType, payload) {
+  /**
+   * @param {number} packetType
+   * @param {Buffer} payload
+   * @param {{ retransmit?: boolean, timeout?: number }} [options] see udpRequest
+   */
+  async rawSend(packetType, payload, { retransmit = true, timeout = this.timeout } = {}) {
     this.count = nextCount(this.count);
     const packet = buildCommandPacket({
       devtype: this.devtype,
@@ -64,7 +69,7 @@ export class BroadlinkClient {
       key: this.key,
       payload,
     });
-    const response = await this.request(this.ip, this.port, packet, { timeout: this.timeout });
+    const response = await this.request(this.ip, this.port, packet, { timeout, retransmit });
     return parseCommandResponse(response, this.key);
   }
 
@@ -82,21 +87,26 @@ export class BroadlinkClient {
 
   /**
    * Send an encrypted command and resolve with the decrypted answer payload.
+   * The authentication that may precede it is always retransmitted (it is
+   * idempotent); `options` only apply to the command itself.
    * @param {number} packetType
    * @param {Buffer} payload
+   * @param {{ retransmit?: boolean, timeout?: number }} [options] see udpRequest
    */
-  send(packetType, payload) {
+  send(packetType, payload, options) {
     return this.serialize(async () => {
       if (!this.authenticated) {
         await this.authenticate();
       }
       try {
-        return await this.rawSend(packetType, payload);
+        return await this.rawSend(packetType, payload, options);
       } catch (err) {
+        // The device refused the command (it was NOT executed): sending it again
+        // on a fresh session is safe, even for a one-shot order.
         if (err instanceof BroadlinkDeviceError && SESSION_ERRORS.has(err.code)) {
           logger.info(`Session expired on ${this.mac}, authenticating again`);
           await this.authenticate();
-          return this.rawSend(packetType, payload);
+          return this.rawSend(packetType, payload, options);
         }
         if (!(err instanceof BroadlinkDeviceError)) {
           // Network error: the device may have rebooted, renegotiate next time.
