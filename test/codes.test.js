@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { CodeStore, parseCode, slugify } from '../src/codes.js';
@@ -67,4 +67,39 @@ test('names that only differ by a symbol get their own key', async () => {
   assert.equal(store.get(MAC, 'Vol-'), undefined);
   assert.equal(await store.remove(MAC, 'Vol-'), false);
   assert.equal(store.list(MAC).length, 1);
+});
+
+test('concurrent saves never corrupt the file nor leave a temporary one behind', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'broadlink-codes-'));
+  const store = new CodeStore(dir);
+  // Two actions (or scenes) adding codes at the same time: the writes used to
+  // share one temporary file, which interleaved them or failed a rename.
+  await Promise.all(
+    Array.from({ length: 20 }, (_, i) =>
+      store.add(MAC, `Key ${i}`, Buffer.from(`2600040000${String(i).padStart(2, '0')}aabb`, 'hex')),
+    ),
+  );
+  const reloaded = await new CodeStore(dir).load();
+  assert.equal(reloaded.list(MAC).length, 20);
+  assert.deepEqual(await readdir(dir), ['codes.json']);
+});
+
+test('a corrupted codes file is set aside instead of failing the start', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'broadlink-codes-'));
+  await writeFile(path.join(dir, 'codes.json'), '{"34ea34aabbcc": {"tv": {"na');
+
+  const store = await new CodeStore(dir).load();
+  assert.deepEqual(store.list(MAC), []);
+  const files = await readdir(dir);
+  assert.equal(files.length, 1);
+  assert.match(files[0], /^codes\.json\.bad-/);
+  assert.equal(
+    await readFile(path.join(dir, files[0]), 'utf8'),
+    '{"34ea34aabbcc": {"tv": {"na',
+    'the unreadable file is kept for a manual recovery',
+  );
+
+  // The store works again from an empty list.
+  await store.add(MAC, 'TV on', Buffer.from('26000400aabbccdd', 'hex'));
+  assert.equal((await new CodeStore(dir).load()).list(MAC).length, 1);
 });

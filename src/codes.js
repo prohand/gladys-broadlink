@@ -8,9 +8,13 @@
 // it must stay stable once the code is created.
 // -----------------------------------------------------------------------------
 
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { randomBytes } from 'node:crypto';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { createLogger } from '@gladysassistant/integration-sdk';
 import { normalizeMac } from './broadlink/protocol.js';
+
+const logger = createLogger({ name: 'codes' });
 
 export const DEFAULT_DATA_DIR = process.env.BROADLINK_DATA_DIR ?? '/data';
 
@@ -56,24 +60,64 @@ export class CodeStore {
   constructor(dataDir = DEFAULT_DATA_DIR) {
     this.file = path.join(dataDir, 'codes.json');
     this.codes = {};
+    // Saves run one after the other: two codes added at the same time (two
+    // actions, a scene) used to write the same temporary file concurrently,
+    // which could interleave the two JSON documents or fail one rename.
+    this.saving = Promise.resolve();
   }
 
   async load() {
+    let text;
     try {
-      this.codes = JSON.parse(await readFile(this.file, 'utf8'));
+      text = await readFile(this.file, 'utf8');
     } catch (err) {
       if (err.code !== 'ENOENT') throw err;
+      this.codes = {};
+      return this;
+    }
+    try {
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('not a JSON object');
+      }
+      this.codes = parsed;
+    } catch (err) {
+      // An unreadable file must not stop the integration (index.js loads the
+      // codes before anything else: a throw here left every plug and remote
+      // undrivable). It is set aside, not deleted, so the codes can still be
+      // recovered by hand.
+      const aside = `${this.file}.bad-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+      await rename(this.file, aside).catch(() => {});
+      logger.error(
+        `${this.file} is unreadable (${err.message}): moved to ${aside}, starting empty`,
+      );
       this.codes = {};
     }
     return this;
   }
 
-  async save() {
+  /** Write the codes to disk; concurrent calls are queued, never interleaved. */
+  save() {
+    const run = this.saving.then(
+      () => this.write(),
+      () => this.write(),
+    );
+    this.saving = run.catch(() => {});
+    return run;
+  }
+
+  async write() {
     await mkdir(path.dirname(this.file), { recursive: true });
-    // Write then rename: a crash never leaves a half-written file.
-    const tmp = `${this.file}.tmp`;
-    await writeFile(tmp, JSON.stringify(this.codes, null, 2));
-    await rename(tmp, this.file);
+    // Write then rename: a crash never leaves a half-written file. A unique
+    // temporary name, so a leftover of a crashed write is never reused.
+    const tmp = `${this.file}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`;
+    try {
+      await writeFile(tmp, JSON.stringify(this.codes, null, 2));
+      await rename(tmp, this.file);
+    } catch (err) {
+      await rm(tmp, { force: true }).catch(() => {});
+      throw err;
+    }
   }
 
   /** @returns {Array<{ key: string, name: string, code: Buffer }>} sorted by name */
