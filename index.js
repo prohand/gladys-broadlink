@@ -20,6 +20,14 @@ import { ACTIONS, BroadlinkIntegration, SCENE_ACTIONS } from './src/integration.
 const gladys = new GladysIntegration();
 const broadlink = new BroadlinkIntegration(gladys);
 
+// Safety net: a promise rejected outside any handler (a background rescan, a
+// timer callback) would otherwise kill the container on Node >= 15, dropping
+// every device until the supervisor restarts it. Log it and keep running; a
+// real crash (uncaughtException) still ends the process.
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', reason);
+});
+
 // --- Discovery: the user clicks "Scan" in the Discovery tab ------------------
 gladys.onScanRequest(async () => {
   logger.info('onScanRequest -> scanning the network');
@@ -37,9 +45,14 @@ gladys.onPoll(async (device) => {
   await broadlink.onPoll(device);
 });
 
-// --- A device was created in Gladys: start driving it right away -------------
+// --- A device was created / updated in Gladys: drive and read it right away --
+// States published before the device existed were dropped by Gladys.
 gladys.onDeviceCreated(async (device) => {
-  broadlink.loadCreatedDevices([device]);
+  await broadlink.refreshCreatedDevice(device);
+});
+
+gladys.onDeviceUpdated(async (device) => {
+  await broadlink.refreshCreatedDevice(device);
 });
 
 // --- Manifest actions: buttons in the Configuration screen -------------------
