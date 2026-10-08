@@ -48,6 +48,18 @@ export class BroadlinkDeviceError extends Error {
   }
 }
 
+/**
+ * The device answered, but with a packet that cannot be read (too short, bad
+ * checksum). It is reachable — at the address we know — so this is NOT a
+ * reason to flag it unreachable or to scan the network for it again.
+ */
+export class BroadlinkProtocolError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'BroadlinkProtocolError';
+  }
+}
+
 /** Broadlink checksum: 16-bit sum of the bytes, seeded with 0xBEAF. */
 export function checksum(buffer) {
   let sum = 0xbeaf;
@@ -167,12 +179,12 @@ export function buildCommandPacket({ devtype, packetType, count, mac, id, key, p
  */
 export function parseCommandResponse(response, key) {
   if (response.length < 0x30) {
-    throw new Error(`Broadlink response too short (${response.length} bytes)`);
+    throw new BroadlinkProtocolError(`Broadlink response too short (${response.length} bytes)`);
   }
   const expected = response.readUInt16LE(0x20);
   const actual = (checksum(response) - response[0x20] - response[0x21]) & 0xffff;
   if (expected !== actual) {
-    throw new Error('Broadlink response checksum mismatch');
+    throw new BroadlinkProtocolError('Broadlink response checksum mismatch');
   }
   const errorCode = response.readInt16LE(0x22);
   if (errorCode !== 0) {
@@ -194,7 +206,7 @@ export function buildAuthPayload() {
 /** Extract the session id and key from the decrypted authentication answer. */
 export function parseAuthPayload(payload) {
   if (payload.length < 0x14) {
-    throw new Error('Broadlink authentication answer too short');
+    throw new BroadlinkProtocolError('Broadlink authentication answer too short');
   }
   return {
     id: payload.readUInt32LE(0x00),

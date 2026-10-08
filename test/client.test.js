@@ -4,6 +4,7 @@
 
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
+import dgram from 'node:dgram';
 import { BroadlinkClient } from '../src/broadlink/client.js';
 import {
   getPlugState,
@@ -15,6 +16,7 @@ import {
   setStripOutlet,
 } from '../src/broadlink/commands.js';
 import { PACKET_TYPES } from '../src/broadlink/protocol.js';
+import { udpRequest } from '../src/broadlink/udp.js';
 import { SESSION_ID, startFakeDevice } from './helpers/fakeBroadlinkDevice.js';
 
 const devices = [];
@@ -147,4 +149,48 @@ test('A1: temperature and humidity are decoded', async () => {
     return answer;
   });
   assert.deepEqual(await readA1Sensors(client), { temperature: 19.7, humidity: 55.3 });
+});
+
+test('a code is emitted once: no retransmission, a longer wait', async (t) => {
+  const { fake, client } = await setup(0x5213);
+  const calls = [];
+  client.request = (ip, port, packet, options) => {
+    calls.push({ port, options });
+    return udpRequest(ip, port, packet, { ...options, retryInterval: 50 });
+  };
+  client.timeout = 200;
+  await sendCode(client, 'rm4pro', Buffer.from('26000400aabbccdd', 'hex'));
+  // The authentication is idempotent: it keeps its retransmissions.
+  assert.equal(calls[0].options.retransmit, true);
+  assert.deepEqual(calls.at(-1).options, { retransmit: false, timeout: 400 });
+
+  // The answer of a SEND_DATA is lost: the code must not be emitted again
+  // (a TV power toggle would switch the TV on, then off).
+  const silent = dgram.createSocket('udp4');
+  let received = 0;
+  silent.on('message', () => {
+    received += 1;
+  });
+  await new Promise((resolve) => silent.bind(0, '127.0.0.1', resolve));
+  t.after(() => new Promise((resolve) => silent.close(resolve)));
+  client.port = silent.address().port;
+  await assert.rejects(sendCode(client, 'rm4pro', Buffer.from('26000400aabbccdd', 'hex')));
+  assert.equal(received, 1);
+  assert.ok(fake.received.length > 0);
+});
+
+test('reads keep retransmitting until the device answers', async () => {
+  const { client } = await setup(0x5213, () => {
+    const answer = Buffer.alloc(16);
+    answer.writeUInt16LE(8, 0);
+    answer.set([21, 50, 48, 25], 6);
+    return answer;
+  });
+  const calls = [];
+  client.request = (ip, port, packet, options) => {
+    calls.push(options);
+    return udpRequest(ip, port, packet, options);
+  };
+  await readRemoteSensors(client, 'rm4pro');
+  assert.ok(calls.every((options) => options.retransmit === true));
 });
