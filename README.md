@@ -21,7 +21,7 @@ dépendance en plus du SDK).
 - **Télécommandes RM** (RM mini 3, RM pro, RM4 mini, RM4 pro…) :
   - apprentissage de codes **IR** et **RF** (modèles pro), import de codes
     existants (base64 Home Assistant ou hexa) ;
-  - chaque code devient un bouton (interrupteur momentané) utilisable sur le
+  - chaque code devient un bouton poussoir (`button`/`push`) utilisable sur le
     tableau de bord et dans les scènes ;
   - action de scène « Envoyer un code Broadlink » (code par son nom,
     répétitions) ;

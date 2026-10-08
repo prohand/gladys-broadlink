@@ -48,9 +48,16 @@ scan again.
 
 ## Remote codes (IR / RF)
 
-Every code saved on an RM remote becomes a **button** of the device in
-Gladys: turning it on sends the code, then it falls back to "off" by itself.
-Use it on the dashboard and in scenes ("Control a device" action).
+Every code saved on an RM remote becomes a **push button** of the device in
+Gladys: each press sends the code once. Use it on the dashboard and in scenes
+("Control a device" action).
+
+> **Upgrading from 1.2.0 or earlier**: codes used to be published as on/off
+> switches, so Gladys' "turn on the switches" scene action and the voice
+> assistants could send any code of the remote (Vol+, for instance). Open the
+> **Discovery** tab and click **Update** on each remote: its codes become push
+> buttons. They keep their identity, so the dashboards and scenes using them
+> keep working.
 
 In scenes, the **"Send a Broadlink code"** action also sends a code by its
 name (remote + code name, with an optional repeat count), without going
@@ -82,7 +89,12 @@ they survive updates.
 
 - **Device IP addresses**: only when the scan does not find a device.
 - **Refresh interval**: how often plug states and sensors are read (60 s by
-  default, 10 to 3600 s).
+  default, 10 to 3600 s). Gladys keeps the polling rhythm a device was
+  **added** with (every 10, 15, 30 or 60 s), and the integration cannot change
+  it afterwards. Raising the interval always applies; lowering it **below
+  60 s** (or below the value in force when the device was added) only applies
+  to devices added afterwards: delete the device in Gladys and add it again
+  from the **Discovery** tab to apply it.
 
 ## Troubleshooting
 

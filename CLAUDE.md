@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A Gladys Assistant **external integration** (Node 20+, ESM, no build step, one runtime
+A Gladys Assistant **external integration** (Node 22+, ESM, no build step, one runtime
 dependency: `@gladysassistant/integration-sdk`) for **Broadlink** devices, 100 % local (no
 Broadlink account or cloud). The Broadlink protocol is re-implemented in plain JavaScript after
 [python-broadlink](https://github.com/mjg59/python-broadlink). Requires Gladys 5.1.0+.
@@ -59,7 +59,15 @@ src/devices/             one blueprint per Gladys device kind: remote, plug, str
 - **Locked devices** (locked in the Broadlink app) refuse local commands: they are logged and
   left out of discovery.
 - **Each learned/imported code is a feature** of its remote: adding or deleting a code
-  re-publishes the catalog and the user must click "Update" in the Discovery tab.
+  re-publishes the catalog and the user must click "Update" in the Discovery tab. Codes are
+  `button`/`push`, never `switch`/`binary` (scenes and assistants "turn on" the FIRST
+  switch/binary of a device, which sent a random code).
+- **A code is emitted once**: `sendCode` sends SEND_DATA without UDP retransmission (a resend
+  after a lost or slow answer fires the code twice); reads and auth keep retransmitting.
+- **Only a missing answer is "unreachable"** (`isNoAnswerError`): an unreadable answer
+  (`BroadlinkProtocolError`) keeps the device local and triggers no rescan.
+- **`codes.json` writes are serialized**; an unreadable file is renamed `.bad-<date>` and the
+  store starts empty instead of failing the initialization.
 - **Polling**: Gladys `poll_frequency` is an enum in MILLISECONDS (1000, 2000, 10000, 15000,
   30000, 60000); any other value rejects the WHOLE discovery batch, and Gladys only polls a
   device that also carries `should_poll: true`. The configured interval (`poll_frequency`,

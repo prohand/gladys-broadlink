@@ -6,9 +6,43 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Remote codes are published as **push buttons** (`button`/`push`) instead of on/off switches:
+  Gladys' "turn on the switches" scene action and the voice assistants took the first switch of
+  the remote and sent a random code (Vol+…). **Open the Discovery tab and click "Update" on each
+  remote** to apply it; the features keep their identity, dashboards and scenes keep working.
+- Node.js 22 or later is required (the Docker image ships Node 24).
+
+### Fixed
+
+- A code is emitted only once: its UDP packet was re-sent every second until the remote
+  answered, so a lost or slow answer fired the code twice (a TV switched on, then off).
+- Two codes added or deleted at the same time could corrupt `codes.json`, and a corrupted file
+  made the whole initialization fail. Writes are now queued, and an unreadable file is set aside
+  (`codes.json.bad-<date>`) instead of blocking the start.
+- A device added (or updated) in Gladys is read at once, even when it was deleted and re-created
+  within the refresh interval.
+- An unreadable answer (bad checksum, short packet) no longer marks the device unreachable nor
+  scans the whole network again.
+- An unexpected error outside any handler is logged instead of stopping the integration.
+
+### Documentation
+
+- Lowering the refresh interval below 60 s only applies to devices added afterwards (Gladys keeps
+  the polling rhythm a device was created with).
+
 ## [1.2.0] - 2026-10-07
 
-- Maintenance release, no functional change.
+### Added
+
+- A device that stops answering triggers a network scan (at most every ten minutes), which finds
+  it again when its IP address changed.
+
+### Fixed
+
+- Codes whose names only differ by a symbol (`Vol+` / `Vol-`) get their own key instead of being
+  refused, and are looked up by name so each one sends (or deletes) its own code.
 
 ## [1.1.0] - 2026-10-06
 

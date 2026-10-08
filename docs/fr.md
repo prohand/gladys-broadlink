@@ -49,10 +49,18 @@ des virgules), enregistrez, puis relancez le scan.
 
 ## Codes de télécommande (IR / RF)
 
-Chaque code enregistré sur une télécommande RM devient un **bouton** de
-l'appareil dans Gladys : l'activer envoie le code, puis il revient tout seul
-à « arrêt ». Vous pouvez l'utiliser sur le tableau de bord et dans les scènes
-(action « Contrôler un appareil »).
+Chaque code enregistré sur une télécommande RM devient un **bouton
+poussoir** de l'appareil dans Gladys : chaque appui envoie le code une fois.
+Vous pouvez l'utiliser sur le tableau de bord et dans les scènes (action
+« Contrôler un appareil »).
+
+> **Mise à jour depuis la 1.2.0 ou avant** : les codes étaient publiés comme
+> des interrupteurs marche/arrêt, si bien que l'action de scène « allumer les
+> interrupteurs » et les assistants vocaux pouvaient envoyer n'importe quel
+> code de la télécommande (Vol+, par exemple). Ouvrez l'onglet **Découverte**
+> et cliquez sur **Mettre à jour** sur chaque télécommande : ses codes
+> deviennent des boutons poussoirs. Ils gardent leur identité, les tableaux de
+> bord et les scènes qui les utilisent continuent de fonctionner.
 
 Dans les scènes, l'action **« Envoyer un code Broadlink »** envoie aussi un
 code par son nom (télécommande + nom du code, avec un nombre de répétitions
@@ -87,7 +95,13 @@ Les codes sont stockés dans le volume de données de l'intégration
 - **Adresses IP des appareils** : seulement si le scan ne trouve pas un
   appareil.
 - **Intervalle de rafraîchissement** : fréquence de lecture de l'état des
-  prises et des capteurs (60 s par défaut, de 10 à 3600 s).
+  prises et des capteurs (60 s par défaut, de 10 à 3600 s). Gladys conserve
+  le rythme d'interrogation avec lequel un appareil a été **ajouté** (toutes
+  les 10, 15, 30 ou 60 s), et l'intégration ne peut plus le modifier ensuite.
+  Augmenter l'intervalle s'applique toujours ; le réduire **sous 60 s** (ou
+  sous la valeur en vigueur à l'ajout de l'appareil) ne vaut que pour les
+  appareils ajoutés ensuite : supprimez l'appareil dans Gladys puis
+  ajoutez-le de nouveau depuis l'onglet **Découverte** pour l'appliquer.
 
 ## Dépannage
 
