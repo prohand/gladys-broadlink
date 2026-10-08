@@ -1,6 +1,6 @@
 {
   "name": "gladys-integration-broadlink",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "private": true,
   "description": "Gladys Assistant external integration for Broadlink devices (RM remotes, SP plugs, MP1 strips, A1 sensors), 100% local.",
   "type": "module",
