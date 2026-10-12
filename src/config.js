@@ -11,6 +11,7 @@
 // -----------------------------------------------------------------------------
 
 import { isIPv4 } from 'node:net';
+import { DEVICE_POLL_FREQUENCIES } from '@gladysassistant/integration-sdk';
 
 // Defaults: they MUST stay consistent with the `default` values declared in the
 // `config_schema` of the manifest.
@@ -28,8 +29,11 @@ export const POLL_FREQUENCY_BOUNDS = { min: 10, max: 3600 };
 // with "invalid poll frequency" for any other value: publishing the configured
 // interval (seconds) as is left the Discovery tab empty. The slowest tick is one
 // minute; a longer interval is honoured by BroadlinkIntegration.onPoll, which
-// skips the ticks that come too early.
-export const GLADYS_POLL_FREQUENCIES_MS = [1000, 2000, 10000, 15000, 30000, 60000];
+// skips the ticks that come too early. The values come from the SDK, which
+// mirrors the core enum, sorted fastest first for gladysPollFrequency.
+export const GLADYS_POLL_FREQUENCIES_MS = Object.values(DEVICE_POLL_FREQUENCIES).sort(
+  (a, b) => a - b,
+);
 
 /**
  * The Gladys tick a device is registered on: the slowest accepted value that is

@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeConfig, parseHosts, DEFAULT_CONFIG } from '../src/config.js';
+import {
+  normalizeConfig,
+  parseHosts,
+  DEFAULT_CONFIG,
+  GLADYS_POLL_FREQUENCIES_MS,
+  gladysPollFrequency,
+} from '../src/config.js';
 
 test('normalizeConfig returns the defaults when called with no argument', () => {
   assert.deepEqual(normalizeConfig(), { ...DEFAULT_CONFIG, hostList: [] });
@@ -29,4 +35,11 @@ test('parseHosts splits, deduplicates and drops invalid addresses', () => {
 
 test('normalizeConfig exposes the parsed host list', () => {
   assert.deepEqual(normalizeConfig({ hosts: '192.168.1.50' }).hostList, ['192.168.1.50']);
+});
+
+test('the Gladys poll ticks are the core enum, in milliseconds, fastest first', () => {
+  assert.deepEqual(GLADYS_POLL_FREQUENCIES_MS, [1000, 2000, 10000, 15000, 30000, 60000]);
+  assert.equal(gladysPollFrequency(10), 10000);
+  assert.equal(gladysPollFrequency(45), 30000);
+  assert.equal(gladysPollFrequency(3600), 60000);
 });
