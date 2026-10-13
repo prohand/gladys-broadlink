@@ -8,8 +8,8 @@
     "de": "Broadlink lokal: RM-Fernbedienungen (IR/RF), SP-Steckdosen, MP1-Leisten, A1-Sensoren.",
     "es": "Broadlink en local: mandos RM (IR/RF), enchufes SP, regletas MP1, sensores A1."
   },
-  "version": "1.3.3",
-  "docker_image": "ghcr.io/prohand/gladys-broadlink:1.3.3",
+  "version": "1.4.0",
+  "docker_image": "ghcr.io/prohand/gladys-broadlink:1.4.0",
   "gladys_version": ">=5.1.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-broadlink/main/cover.jpg",
   "categories": ["multimedia", "appliances", "energy"],
