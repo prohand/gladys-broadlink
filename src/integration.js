@@ -41,8 +41,10 @@ export const RESCAN_MIN_INTERVAL_MS = 10 * 60 * 1000;
 export const RESCAN_DELAY_MS = 30 * 1000;
 
 const DISCOVERY_HINT = {
-  en: 'Open the Discovery tab to add or update the device.',
+  en: 'Open the Discover tab to add or update the device.',
   fr: "Ouvrez l'onglet Découverte pour ajouter ou mettre à jour l'appareil.",
+  de: 'Öffne den Tab „Entdecken“, um das Gerät hinzuzufügen oder zu aktualisieren.',
+  es: 'Abra la pestaña «Descubrir» para añadir o actualizar el dispositivo.',
 };
 
 export class BroadlinkIntegration {
@@ -285,6 +287,8 @@ export class BroadlinkIntegration {
     return {
       en: `Code "${entry.name}" learned (${code.length} bytes). ${DISCOVERY_HINT.en}`,
       fr: `Code « ${entry.name} » appris (${code.length} octets). ${DISCOVERY_HINT.fr}`,
+      de: `Code „${entry.name}“ angelernt (${code.length} Bytes). ${DISCOVERY_HINT.de}`,
+      es: `Código «${entry.name}» aprendido (${code.length} bytes). ${DISCOVERY_HINT.es}`,
     };
   }
 
@@ -295,6 +299,8 @@ export class BroadlinkIntegration {
     return {
       en: `Code "${entry.name}" imported. ${DISCOVERY_HINT.en}`,
       fr: `Code « ${entry.name} » importé. ${DISCOVERY_HINT.fr}`,
+      de: `Code „${entry.name}“ importiert. ${DISCOVERY_HINT.de}`,
+      es: `Código «${entry.name}» importado. ${DISCOVERY_HINT.es}`,
     };
   }
 
@@ -315,6 +321,8 @@ export class BroadlinkIntegration {
     return {
       en: `Code "${entry.name}" sent.`,
       fr: `Code « ${entry.name} » envoyé.`,
+      de: `Code „${entry.name}“ gesendet.`,
+      es: `Código «${entry.name}» enviado.`,
     };
   }
 
@@ -327,6 +335,8 @@ export class BroadlinkIntegration {
     return {
       en: `Code "${name}" deleted. ${DISCOVERY_HINT.en}`,
       fr: `Code « ${name} » supprimé. ${DISCOVERY_HINT.fr}`,
+      de: `Code „${name}“ gelöscht. ${DISCOVERY_HINT.de}`,
+      es: `Código «${name}» eliminado. ${DISCOVERY_HINT.es}`,
     };
   }
 
@@ -337,11 +347,15 @@ export class BroadlinkIntegration {
       return {
         en: `No code saved on ${deviceName(info)} yet.`,
         fr: `Aucun code enregistré sur ${deviceName(info)} pour l'instant.`,
+        de: `Noch kein Code auf ${deviceName(info)} gespeichert.`,
+        es: `Todavía no hay ningún código guardado en ${deviceName(info)}.`,
       };
     }
     return {
       en: `${names.length} code(s) on ${deviceName(info)}: ${names.join(', ')}`,
       fr: `${names.length} code(s) sur ${deviceName(info)} : ${names.join(', ')}`,
+      de: `${names.length} Code(s) auf ${deviceName(info)}: ${names.join(', ')}`,
+      es: `${names.length} código(s) en ${deviceName(info)}: ${names.join(', ')}`,
     };
   }
 
@@ -350,14 +364,17 @@ export class BroadlinkIntegration {
     const devices = this.registry.all();
     if (devices.length === 0) {
       return {
-        en: 'No Broadlink device found yet. Run a scan from the Discovery tab.',
+        en: 'No Broadlink device found yet. Run a scan from the Discover tab.',
         fr: "Aucun appareil Broadlink trouvé pour l'instant. Lancez un scan depuis l'onglet Découverte.",
+        de: 'Noch kein Broadlink-Gerät gefunden. Starte einen Scan im Tab „Entdecken“.',
+        es: 'Todavía no se ha encontrado ningún dispositivo Broadlink. Inicie una búsqueda desde la pestaña «Descubrir».',
       };
     }
     const lines = devices.map(
       (info) =>
         `${deviceName(info)} — ${info.model} — ${info.ip} — ${formatMac(info.mac)}${info.locked ? ' (locked)' : ''}`,
     );
-    return { en: lines.join('\n'), fr: lines.join('\n') };
+    const text = lines.join('\n');
+    return { en: text, fr: text, de: text, es: text };
   }
 }

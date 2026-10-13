@@ -94,5 +94,5 @@ network beyond loopback.
 ## Conventions
 
 Prettier formats, ESLint catches mistakes. Comments explain **why**, in English. User-facing
-messages are bilingual `{ en, fr }`; the README and `docs/fr.md` are French, `docs/en.md` English:
-keep the docs in sync.
+text (manifest, messages) is `{ en, fr, de, es }`; the README is French, and `docs/en.md`,
+`docs/fr.md`, `docs/de.md`, `docs/es.md` stay in sync.

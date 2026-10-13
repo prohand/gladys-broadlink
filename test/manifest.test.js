@@ -105,3 +105,52 @@ test('dynamic selects declare a source and no static options', () => {
 test('Broadlink is declared local-only', () => {
   assert.deepEqual(manifest.transports, ['local']);
 });
+
+// Gladys shows the reader's language (en, fr, de, es) and falls back on `en`:
+// every text of the manifest carries all four, within the store's limits.
+const LANGUAGES = ['en', 'fr', 'de', 'es'];
+
+function multiLanguageTexts(node, path = '$', found = []) {
+  if (Array.isArray(node)) {
+    node.forEach((item, i) => multiLanguageTexts(item, `${path}[${i}]`, found));
+  } else if (node && typeof node === 'object') {
+    if (typeof node.en === 'string') {
+      found.push({ path, text: node });
+    } else {
+      for (const [key, value] of Object.entries(node)) {
+        multiLanguageTexts(value, `${path}.${key}`, found);
+      }
+    }
+  }
+  return found;
+}
+
+test('every manifest text is translated in en, fr, de and es', () => {
+  const texts = multiLanguageTexts(manifest);
+  assert.ok(texts.length > 20);
+  for (const { path, text } of texts) {
+    assert.deepEqual(Object.keys(text), LANGUAGES, `${path} must be { en, fr, de, es }`);
+    for (const lang of LANGUAGES) {
+      assert.ok(text[lang].trim().length > 0, `${path}.${lang} is empty`);
+    }
+  }
+});
+
+test('the catalog description holds 10 to 100 characters per language', () => {
+  for (const lang of LANGUAGES) {
+    const { length } = manifest.description[lang];
+    assert.ok(length >= 10 && length <= 100, `description.${lang}: ${length} characters`);
+  }
+});
+
+test('section texts stay within 1000 characters per language', () => {
+  const sections = [
+    ...manifest.config_schema,
+    ...(manifest.actions ?? []).flatMap((a) => a.fields ?? []),
+  ].filter((f) => f.type === 'section');
+  for (const section of sections) {
+    for (const lang of LANGUAGES) {
+      assert.ok((section.description?.[lang] ?? '').length <= 1000, `${section.key}.${lang}`);
+    }
+  }
+});
