@@ -41,9 +41,9 @@ export const RESCAN_MIN_INTERVAL_MS = 10 * 60 * 1000;
 export const RESCAN_DELAY_MS = 30 * 1000;
 
 const DISCOVERY_HINT = {
-  en: 'Open the Discovery tab to add or update the device.',
+  en: 'Open the Discover tab to add or update the device.',
   fr: "Ouvrez l'onglet Découverte pour ajouter ou mettre à jour l'appareil.",
-  de: 'Öffnen Sie den Tab „Entdecken“, um das Gerät hinzuzufügen oder zu aktualisieren.',
+  de: 'Öffne den Tab „Entdecken“, um das Gerät hinzuzufügen oder zu aktualisieren.',
   es: 'Abra la pestaña «Descubrir» para añadir o actualizar el dispositivo.',
 };
 
@@ -364,9 +364,9 @@ export class BroadlinkIntegration {
     const devices = this.registry.all();
     if (devices.length === 0) {
       return {
-        en: 'No Broadlink device found yet. Run a scan from the Discovery tab.',
+        en: 'No Broadlink device found yet. Run a scan from the Discover tab.',
         fr: "Aucun appareil Broadlink trouvé pour l'instant. Lancez un scan depuis l'onglet Découverte.",
-        de: 'Noch kein Broadlink-Gerät gefunden. Starten Sie einen Scan im Tab „Entdecken“.',
+        de: 'Noch kein Broadlink-Gerät gefunden. Starte einen Scan im Tab „Entdecken“.',
         es: 'Todavía no se ha encontrado ningún dispositivo Broadlink. Inicie una búsqueda desde la pestaña «Descubrir».',
       };
     }

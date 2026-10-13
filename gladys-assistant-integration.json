@@ -31,9 +31,9 @@
         "es": "Primeros pasos"
       },
       "description": {
-        "en": "Set up your devices on your Wi-Fi with the Broadlink app first, and make sure they are NOT locked (device settings > Lock device: off). Then run a scan from the Discovery tab. Everything stays on your local network: no Broadlink account is needed here.",
+        "en": "Set up your devices on your Wi-Fi with the Broadlink app first, and make sure they are NOT locked (device settings > Lock device: off). Then run a scan from the Discover tab. Everything stays on your local network: no Broadlink account is needed here.",
         "fr": "Installez d'abord vos appareils sur votre Wi-Fi avec l'application Broadlink, et vérifiez qu'ils ne sont PAS verrouillés (paramètres de l'appareil > Verrouiller l'appareil : désactivé). Lancez ensuite un scan depuis l'onglet Découverte. Tout reste sur votre réseau local : aucun compte Broadlink n'est nécessaire ici.",
-        "de": "Richten Sie Ihre Geräte zuerst mit der Broadlink-App in Ihrem WLAN ein und stellen Sie sicher, dass sie NICHT gesperrt sind (Geräteeinstellungen > Gerät sperren: aus). Starten Sie dann einen Scan im Tab „Entdecken“. Alles bleibt in Ihrem lokalen Netzwerk: Ein Broadlink-Konto ist hier nicht nötig.",
+        "de": "Richte deine Geräte zuerst mit der Broadlink-App in deinem WLAN ein und stelle sicher, dass sie NICHT gesperrt sind (Geräteeinstellungen > Gerät sperren: aus). Starte dann einen Scan im Tab „Entdecken“. Alles bleibt in deinem lokalen Netzwerk: Ein Broadlink-Konto ist hier nicht nötig.",
         "es": "Primero configure sus dispositivos en su Wi-Fi con la app Broadlink y compruebe que NO estén bloqueados (ajustes del dispositivo > Bloquear dispositivo: desactivado). Después inicie una búsqueda desde la pestaña «Descubrir». Todo se queda en su red local: aquí no hace falta ninguna cuenta Broadlink."
       },
       "links": [
@@ -60,7 +60,7 @@
       "description": {
         "en": "Only if the scan does not find a device (other VLAN, broadcast filtered...): its IP addresses, separated by commas. Give your devices a fixed IP (DHCP reservation).",
         "fr": "Seulement si le scan ne trouve pas un appareil (autre VLAN, broadcast filtré…) : ses adresses IP, séparées par des virgules. Donnez une IP fixe à vos appareils (réservation DHCP).",
-        "de": "Nur wenn der Scan ein Gerät nicht findet (anderes VLAN, gefilterter Broadcast…): seine IP-Adressen, durch Kommas getrennt. Geben Sie Ihren Geräten eine feste IP (DHCP-Reservierung).",
+        "de": "Nur wenn der Scan ein Gerät nicht findet (anderes VLAN, gefilterter Broadcast…): seine IP-Adressen, durch Kommas getrennt. Gib deinen Geräten eine feste IP (DHCP-Reservierung).",
         "es": "Solo si la búsqueda no encuentra un dispositivo (otra VLAN, broadcast filtrado…): sus direcciones IP, separadas por comas. Asigne una IP fija a sus dispositivos (reserva DHCP)."
       },
       "placeholder": {
@@ -118,13 +118,13 @@
           "label": {
             "en": "How to learn a code",
             "fr": "Comment apprendre un code",
-            "de": "So lernen Sie einen Code an",
+            "de": "So lernst du einen Code an",
             "es": "Cómo aprender un código"
           },
           "description": {
             "en": "Infrared: click the button, then within 30 s press the key of your original remote, pointed at the Broadlink. Radio (RF, RM pro / RM4 pro only): HOLD the key until the frequency is found (up to 30 s), release it, then press it briefly once.",
             "fr": "Infrarouge : cliquez sur le bouton, puis dans les 30 s appuyez sur la touche de votre télécommande d'origine, pointée vers le Broadlink. Radio (RF, RM pro / RM4 pro uniquement) : MAINTENEZ la touche appuyée jusqu'à ce que la fréquence soit trouvée (jusqu'à 30 s), relâchez-la, puis appuyez une fois brièvement.",
-            "de": "Infrarot: Klicken Sie auf die Schaltfläche und drücken Sie dann innerhalb von 30 s die Taste Ihrer Original-Fernbedienung, auf den Broadlink gerichtet. Funk (RF, nur RM pro / RM4 pro): HALTEN Sie die Taste gedrückt, bis die Frequenz gefunden ist (bis zu 30 s), lassen Sie sie los und drücken Sie sie dann einmal kurz.",
+            "de": "Infrarot: Klicke auf die Schaltfläche und drücke dann innerhalb von 30 s die Taste deiner Original-Fernbedienung, auf den Broadlink gerichtet. Funk (RF, nur RM pro / RM4 pro): HALTE die Taste gedrückt, bis die Frequenz gefunden ist (bis zu 30 s), lass sie los und drücke sie dann einmal kurz.",
             "es": "Infrarrojo: haga clic en el botón y, en los 30 s siguientes, pulse la tecla de su mando original apuntando al Broadlink. Radio (RF, solo RM pro / RM4 pro): MANTENGA pulsada la tecla hasta que se encuentre la frecuencia (hasta 30 s), suéltela y luego púlsela una vez brevemente."
           }
         },

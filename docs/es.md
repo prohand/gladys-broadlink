@@ -37,7 +37,7 @@ Se necesita **Gladys 5.1.0 o posterior**.
 1. Abra la pestaña **Descubrir** de la integración y pulse **Buscar**.
 2. Gladys envía una petición de descubrimiento (broadcast UDP, puerto 80) en
    su red local; aparecen los dispositivos encontrados.
-3. Añada los que quiera.
+3. Pulse **Añadir a Gladys** en los que quiera.
 
 Cada dispositivo muestra la insignia **Local** cuando responde, o
 **Inaccesible** cuando deja de responder (desenchufado, IP cambiada…).
@@ -51,11 +51,11 @@ comas), guarde y vuelva a buscar.
 
 Cada código guardado en un mando RM se convierte en un **pulsador** del
 dispositivo en Gladys: cada pulsación envía el código una vez. Úselo en el
-panel y en las escenas (acción «Controlar un dispositivo»).
+panel y en las escenas (acción «Establecer valor del dispositivo»).
 
 > **Actualización desde la 1.2.0 o anterior**: los códigos se publicaban antes
 > como interruptores de encendido/apagado, de modo que la acción de escena
-> «encender los interruptores» de Gladys y los asistentes de voz podían enviar
+> «Encender los interruptores» de Gladys y los asistentes de voz podían enviar
 > cualquier código del mando (Vol+, por ejemplo). Abra la pestaña
 > **Descubrir** y haga clic en **Actualizar** en cada mando: sus códigos se
 > convierten en pulsadores. Conservan su identidad, así que los paneles y las
@@ -109,5 +109,5 @@ Los códigos se guardan en el volumen de datos de la integración
   dispositivo está bloqueado en la app Broadlink, desbloquéelo.
 - **No se captura un código IR**: acerque el mando original (5–10 cm) y
   apunte a la parte superior del Broadlink.
-- **Registros**: consulte los registros de la integración desde Gladys (o
+- **Registros**: consulte los registros de la integración en su pestaña **Registros** en Gladys (o
   `docker logs`), con `LOG_LEVEL=debug` para más detalles.

@@ -33,10 +33,10 @@ port 80).
 
 ## Add the devices
 
-1. Open the **Discovery** tab of the integration and run a **scan**.
+1. Open the **Discover** tab of the integration and press **Scan**.
 2. Gladys sends a discovery request (UDP broadcast, port 80) on your local
    network; the devices found show up.
-3. Add the ones you want.
+3. Click **Add to Gladys** on the ones you want.
 
 Every device shows a **local** badge when it answers, or **unreachable**
 when it stops answering (unplugged, IP changed…).
@@ -50,12 +50,12 @@ scan again.
 
 Every code saved on an RM remote becomes a **push button** of the device in
 Gladys: each press sends the code once. Use it on the dashboard and in scenes
-("Control a device" action).
+("Set device value" action).
 
 > **Upgrading from 1.2.0 or earlier**: codes used to be published as on/off
-> switches, so Gladys' "turn on the switches" scene action and the voice
+> switches, so Gladys' "Turn On the Switches" scene action and the voice
 > assistants could send any code of the remote (Vol+, for instance). Open the
-> **Discovery** tab and click **Update** on each remote: its codes become push
+> **Discover** tab and click **Update** on each remote: its codes become push
 > buttons. They keep their identity, so the dashboards and scenes using them
 > keep working.
 
@@ -79,7 +79,7 @@ The actions live in the **Configuration** tab:
 - **List found devices**: name, model, IP and MAC of every device (handy for
   troubleshooting).
 
-After learning, importing or deleting a code, open the **Discovery** tab and
+After learning, importing or deleting a code, open the **Discover** tab and
 click **Update** on the remote so the button appears (or disappears).
 
 Codes are stored in the data volume of the integration (`/data/codes.json`):
@@ -94,7 +94,7 @@ they survive updates.
   it afterwards. Raising the interval always applies; lowering it **below
   60 s** (or below the value in force when the device was added) only applies
   to devices added afterwards: delete the device in Gladys and add it again
-  from the **Discovery** tab to apply it.
+  from the **Discover** tab to apply it.
 
 ## Troubleshooting
 
@@ -104,5 +104,5 @@ they survive updates.
   locked in the Broadlink app, unlock it.
 - **An IR code is not captured**: bring the original remote closer
   (5–10 cm) and aim at the top of the Broadlink.
-- **Logs**: read the integration logs from Gladys (or `docker logs`), with
+- **Logs**: read the integration logs in its **Logs** tab in Gladys (or `docker logs`), with
   `LOG_LEVEL=debug` for details.
