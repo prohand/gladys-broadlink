@@ -192,6 +192,8 @@ test('learning an IR code adds a button feature that sends it', async () => {
   const message = await integration.learnCode({ device: remoteId, name: 'TV on', signal: 'ir' });
   assert.match(message.en, /TV on/);
   assert.match(message.fr, /Découverte/);
+  assert.match(message.de, /Entdecken/);
+  assert.match(message.es, /Descubrir/);
 
   const remote = gladys.lastDiscovered.find((d) => d.external_id === remoteId);
   const button = remote.features.find((f) => f.name === 'TV on');
@@ -231,7 +233,8 @@ test('codes can be imported, listed, sent and deleted through the actions', asyn
   const device = gladys.externalIds('remote', RM_MAC).device;
 
   await integration.importCode({ device, name: 'Clim 21°C', code: LEARNED.toString('hex') });
-  assert.match(integration.listCodes({ device }).fr, /Clim 21°C/);
+  const listing = integration.listCodes({ device });
+  for (const lang of ['en', 'fr', 'de', 'es']) assert.match(listing[lang], /Clim 21°C/);
 
   const before = rm.received.length;
   await integration.sendCode({ device, name: 'clim 21°c', repeat: 2 });

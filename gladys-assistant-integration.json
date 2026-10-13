@@ -4,7 +4,9 @@
   "name": "Broadlink",
   "description": {
     "en": "Local control of Broadlink devices: RM remotes (IR/RF), SP plugs, MP1 strips, A1 sensors.",
-    "fr": "Broadlink en local : télécommandes RM (IR/RF), prises SP, multiprises MP1, capteurs A1."
+    "fr": "Broadlink en local : télécommandes RM (IR/RF), prises SP, multiprises MP1, capteurs A1.",
+    "de": "Broadlink lokal: RM-Fernbedienungen (IR/RF), SP-Steckdosen, MP1-Leisten, A1-Sensoren.",
+    "es": "Broadlink en local: mandos RM (IR/RF), enchufes SP, regletas MP1, sensores A1."
   },
   "version": "1.3.3",
   "docker_image": "ghcr.io/prohand/gladys-broadlink:1.3.3",
@@ -24,18 +26,24 @@
       "type": "section",
       "label": {
         "en": "Getting started",
-        "fr": "Pour commencer"
+        "fr": "Pour commencer",
+        "de": "Erste Schritte",
+        "es": "Primeros pasos"
       },
       "description": {
         "en": "Set up your devices on your Wi-Fi with the Broadlink app first, and make sure they are NOT locked (device settings > Lock device: off). Then run a scan from the Discovery tab. Everything stays on your local network: no Broadlink account is needed here.",
-        "fr": "Installez d'abord vos appareils sur votre Wi-Fi avec l'application Broadlink, et vérifiez qu'ils ne sont PAS verrouillés (paramètres de l'appareil > Verrouiller l'appareil : désactivé). Lancez ensuite un scan depuis l'onglet Découverte. Tout reste sur votre réseau local : aucun compte Broadlink n'est nécessaire ici."
+        "fr": "Installez d'abord vos appareils sur votre Wi-Fi avec l'application Broadlink, et vérifiez qu'ils ne sont PAS verrouillés (paramètres de l'appareil > Verrouiller l'appareil : désactivé). Lancez ensuite un scan depuis l'onglet Découverte. Tout reste sur votre réseau local : aucun compte Broadlink n'est nécessaire ici.",
+        "de": "Richten Sie Ihre Geräte zuerst mit der Broadlink-App in Ihrem WLAN ein und stellen Sie sicher, dass sie NICHT gesperrt sind (Geräteeinstellungen > Gerät sperren: aus). Starten Sie dann einen Scan im Tab „Entdecken“. Alles bleibt in Ihrem lokalen Netzwerk: Ein Broadlink-Konto ist hier nicht nötig.",
+        "es": "Primero configure sus dispositivos en su Wi-Fi con la app Broadlink y compruebe que NO estén bloqueados (ajustes del dispositivo > Bloquear dispositivo: desactivado). Después inicie una búsqueda desde la pestaña «Descubrir». Todo se queda en su red local: aquí no hace falta ninguna cuenta Broadlink."
       },
       "links": [
         {
           "url": "https://github.com/mjg59/python-broadlink",
           "label": {
             "en": "Supported models",
-            "fr": "Modèles pris en charge"
+            "fr": "Modèles pris en charge",
+            "de": "Unterstützte Modelle",
+            "es": "Modelos compatibles"
           }
         }
       ]
@@ -45,15 +53,21 @@
       "type": "string",
       "label": {
         "en": "Device IP addresses (optional)",
-        "fr": "Adresses IP des appareils (optionnel)"
+        "fr": "Adresses IP des appareils (optionnel)",
+        "de": "IP-Adressen der Geräte (optional)",
+        "es": "Direcciones IP de los dispositivos (opcional)"
       },
       "description": {
         "en": "Only if the scan does not find a device (other VLAN, broadcast filtered...): its IP addresses, separated by commas. Give your devices a fixed IP (DHCP reservation).",
-        "fr": "Seulement si le scan ne trouve pas un appareil (autre VLAN, broadcast filtré…) : ses adresses IP, séparées par des virgules. Donnez une IP fixe à vos appareils (réservation DHCP)."
+        "fr": "Seulement si le scan ne trouve pas un appareil (autre VLAN, broadcast filtré…) : ses adresses IP, séparées par des virgules. Donnez une IP fixe à vos appareils (réservation DHCP).",
+        "de": "Nur wenn der Scan ein Gerät nicht findet (anderes VLAN, gefilterter Broadcast…): seine IP-Adressen, durch Kommas getrennt. Geben Sie Ihren Geräten eine feste IP (DHCP-Reservierung).",
+        "es": "Solo si la búsqueda no encuentra un dispositivo (otra VLAN, broadcast filtrado…): sus direcciones IP, separadas por comas. Asigne una IP fija a sus dispositivos (reserva DHCP)."
       },
       "placeholder": {
         "en": "192.168.1.50, 192.168.1.51",
-        "fr": "192.168.1.50, 192.168.1.51"
+        "fr": "192.168.1.50, 192.168.1.51",
+        "de": "192.168.1.50, 192.168.1.51",
+        "es": "192.168.1.50, 192.168.1.51"
       },
       "required": false
     },
@@ -62,11 +76,15 @@
       "type": "number",
       "label": {
         "en": "Refresh interval (s)",
-        "fr": "Intervalle de rafraîchissement (s)"
+        "fr": "Intervalle de rafraîchissement (s)",
+        "de": "Aktualisierungsintervall (s)",
+        "es": "Intervalo de actualización (s)"
       },
       "description": {
         "en": "How often plug states and sensors are read, in seconds.",
-        "fr": "Fréquence de lecture de l'état des prises et des capteurs, en secondes."
+        "fr": "Fréquence de lecture de l'état des prises et des capteurs, en secondes.",
+        "de": "Wie oft der Zustand der Steckdosen und die Sensoren gelesen werden, in Sekunden.",
+        "es": "Cada cuánto se leen el estado de los enchufes y los sensores, en segundos."
       },
       "required": false,
       "default": 60,
@@ -79,14 +97,18 @@
       "key": "list_devices",
       "label": {
         "en": "List found devices",
-        "fr": "Lister les appareils trouvés"
+        "fr": "Lister les appareils trouvés",
+        "de": "Gefundene Geräte auflisten",
+        "es": "Listar los dispositivos encontrados"
       }
     },
     {
       "key": "learn_code",
       "label": {
         "en": "Learn a remote code",
-        "fr": "Apprendre un code de télécommande"
+        "fr": "Apprendre un code de télécommande",
+        "de": "Fernbedienungscode anlernen",
+        "es": "Aprender un código de mando"
       },
       "timeout_seconds": 90,
       "fields": [
@@ -95,11 +117,15 @@
           "type": "section",
           "label": {
             "en": "How to learn a code",
-            "fr": "Comment apprendre un code"
+            "fr": "Comment apprendre un code",
+            "de": "So lernen Sie einen Code an",
+            "es": "Cómo aprender un código"
           },
           "description": {
             "en": "Infrared: click the button, then within 30 s press the key of your original remote, pointed at the Broadlink. Radio (RF, RM pro / RM4 pro only): HOLD the key until the frequency is found (up to 30 s), release it, then press it briefly once.",
-            "fr": "Infrarouge : cliquez sur le bouton, puis dans les 30 s appuyez sur la touche de votre télécommande d'origine, pointée vers le Broadlink. Radio (RF, RM pro / RM4 pro uniquement) : MAINTENEZ la touche appuyée jusqu'à ce que la fréquence soit trouvée (jusqu'à 30 s), relâchez-la, puis appuyez une fois brièvement."
+            "fr": "Infrarouge : cliquez sur le bouton, puis dans les 30 s appuyez sur la touche de votre télécommande d'origine, pointée vers le Broadlink. Radio (RF, RM pro / RM4 pro uniquement) : MAINTENEZ la touche appuyée jusqu'à ce que la fréquence soit trouvée (jusqu'à 30 s), relâchez-la, puis appuyez une fois brièvement.",
+            "de": "Infrarot: Klicken Sie auf die Schaltfläche und drücken Sie dann innerhalb von 30 s die Taste Ihrer Original-Fernbedienung, auf den Broadlink gerichtet. Funk (RF, nur RM pro / RM4 pro): HALTEN Sie die Taste gedrückt, bis die Frequenz gefunden ist (bis zu 30 s), lassen Sie sie los und drücken Sie sie dann einmal kurz.",
+            "es": "Infrarrojo: haga clic en el botón y, en los 30 s siguientes, pulse la tecla de su mando original apuntando al Broadlink. Radio (RF, solo RM pro / RM4 pro): MANTENGA pulsada la tecla hasta que se encuentre la frecuencia (hasta 30 s), suéltela y luego púlsela una vez brevemente."
           }
         },
         {
@@ -108,7 +134,9 @@
           "source": "devices",
           "label": {
             "en": "Remote (RM)",
-            "fr": "Télécommande (RM)"
+            "fr": "Télécommande (RM)",
+            "de": "Fernbedienung (RM)",
+            "es": "Mando (RM)"
           },
           "required": true
         },
@@ -117,11 +145,15 @@
           "type": "string",
           "label": {
             "en": "Code name",
-            "fr": "Nom du code"
+            "fr": "Nom du code",
+            "de": "Name des Codes",
+            "es": "Nombre del código"
           },
           "placeholder": {
             "en": "TV on",
-            "fr": "Allumer télé"
+            "fr": "Allumer télé",
+            "de": "TV an",
+            "es": "Encender tele"
           },
           "required": true
         },
@@ -130,7 +162,9 @@
           "type": "select",
           "label": {
             "en": "Signal",
-            "fr": "Signal"
+            "fr": "Signal",
+            "de": "Signal",
+            "es": "Señal"
           },
           "required": true,
           "default": "ir",
@@ -139,14 +173,18 @@
               "value": "ir",
               "label": {
                 "en": "Infrared (IR)",
-                "fr": "Infrarouge (IR)"
+                "fr": "Infrarouge (IR)",
+                "de": "Infrarot (IR)",
+                "es": "Infrarrojo (IR)"
               }
             },
             {
               "value": "rf",
               "label": {
                 "en": "Radio (RF 433/315 MHz)",
-                "fr": "Radio (RF 433/315 MHz)"
+                "fr": "Radio (RF 433/315 MHz)",
+                "de": "Funk (RF 433/315 MHz)",
+                "es": "Radio (RF 433/315 MHz)"
               }
             }
           ]
@@ -157,7 +195,9 @@
       "key": "import_code",
       "label": {
         "en": "Import a code",
-        "fr": "Importer un code"
+        "fr": "Importer un code",
+        "de": "Code importieren",
+        "es": "Importar un código"
       },
       "fields": [
         {
@@ -166,7 +206,9 @@
           "source": "devices",
           "label": {
             "en": "Remote (RM)",
-            "fr": "Télécommande (RM)"
+            "fr": "Télécommande (RM)",
+            "de": "Fernbedienung (RM)",
+            "es": "Mando (RM)"
           },
           "required": true
         },
@@ -175,7 +217,9 @@
           "type": "string",
           "label": {
             "en": "Code name",
-            "fr": "Nom du code"
+            "fr": "Nom du code",
+            "de": "Name des Codes",
+            "es": "Nombre del código"
           },
           "required": true
         },
@@ -184,11 +228,15 @@
           "type": "string",
           "label": {
             "en": "Code (base64 or hex)",
-            "fr": "Code (base64 ou hexa)"
+            "fr": "Code (base64 ou hexa)",
+            "de": "Code (Base64 oder Hex)",
+            "es": "Código (base64 o hex)"
           },
           "description": {
             "en": "A Broadlink code, e.g. copied from Home Assistant (base64, starts with \"JgB\").",
-            "fr": "Un code Broadlink, par exemple copié depuis Home Assistant (base64, commence par « JgB »)."
+            "fr": "Un code Broadlink, par exemple copié depuis Home Assistant (base64, commence par « JgB »).",
+            "de": "Ein Broadlink-Code, z. B. aus Home Assistant kopiert (Base64, beginnt mit „JgB“).",
+            "es": "Un código Broadlink, por ejemplo copiado de Home Assistant (base64, empieza por «JgB»)."
           },
           "required": true
         }
@@ -198,7 +246,9 @@
       "key": "send_code",
       "label": {
         "en": "Send a code",
-        "fr": "Envoyer un code"
+        "fr": "Envoyer un code",
+        "de": "Code senden",
+        "es": "Enviar un código"
       },
       "timeout_seconds": 15,
       "fields": [
@@ -208,7 +258,9 @@
           "source": "devices",
           "label": {
             "en": "Remote (RM)",
-            "fr": "Télécommande (RM)"
+            "fr": "Télécommande (RM)",
+            "de": "Fernbedienung (RM)",
+            "es": "Mando (RM)"
           },
           "required": true
         },
@@ -217,7 +269,9 @@
           "type": "string",
           "label": {
             "en": "Code name",
-            "fr": "Nom du code"
+            "fr": "Nom du code",
+            "de": "Name des Codes",
+            "es": "Nombre del código"
           },
           "required": true
         }
@@ -227,7 +281,9 @@
       "key": "list_codes",
       "label": {
         "en": "List saved codes",
-        "fr": "Lister les codes enregistrés"
+        "fr": "Lister les codes enregistrés",
+        "de": "Gespeicherte Codes auflisten",
+        "es": "Listar los códigos guardados"
       },
       "fields": [
         {
@@ -236,7 +292,9 @@
           "source": "devices",
           "label": {
             "en": "Remote (RM)",
-            "fr": "Télécommande (RM)"
+            "fr": "Télécommande (RM)",
+            "de": "Fernbedienung (RM)",
+            "es": "Mando (RM)"
           },
           "required": true
         }
@@ -246,7 +304,9 @@
       "key": "delete_code",
       "label": {
         "en": "Delete a code",
-        "fr": "Supprimer un code"
+        "fr": "Supprimer un code",
+        "de": "Code löschen",
+        "es": "Eliminar un código"
       },
       "fields": [
         {
@@ -255,7 +315,9 @@
           "source": "devices",
           "label": {
             "en": "Remote (RM)",
-            "fr": "Télécommande (RM)"
+            "fr": "Télécommande (RM)",
+            "de": "Fernbedienung (RM)",
+            "es": "Mando (RM)"
           },
           "required": true
         },
@@ -264,7 +326,9 @@
           "type": "string",
           "label": {
             "en": "Code name",
-            "fr": "Nom du code"
+            "fr": "Nom du code",
+            "de": "Name des Codes",
+            "es": "Nombre del código"
           },
           "required": true
         }
@@ -276,7 +340,9 @@
       "key": "send_code",
       "label": {
         "en": "Send a Broadlink code",
-        "fr": "Envoyer un code Broadlink"
+        "fr": "Envoyer un code Broadlink",
+        "de": "Broadlink-Code senden",
+        "es": "Enviar un código Broadlink"
       },
       "timeout_seconds": 30,
       "fields": [
@@ -286,7 +352,9 @@
           "source": "devices",
           "label": {
             "en": "Remote (RM)",
-            "fr": "Télécommande (RM)"
+            "fr": "Télécommande (RM)",
+            "de": "Fernbedienung (RM)",
+            "es": "Mando (RM)"
           },
           "required": true
         },
@@ -295,7 +363,9 @@
           "type": "string",
           "label": {
             "en": "Code name",
-            "fr": "Nom du code"
+            "fr": "Nom du code",
+            "de": "Name des Codes",
+            "es": "Nombre del código"
           },
           "required": true
         },
@@ -304,7 +374,9 @@
           "type": "number",
           "label": {
             "en": "Repeat",
-            "fr": "Répétitions"
+            "fr": "Répétitions",
+            "de": "Wiederholungen",
+            "es": "Repeticiones"
           },
           "required": false,
           "default": 1,

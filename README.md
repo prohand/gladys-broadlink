@@ -34,8 +34,10 @@ dépendance en plus du SDK).
 - **Capteur A1** : température et humidité.
 
 La documentation utilisateur est dans [`docs/fr.md`](./docs/fr.md) /
-[`docs/en.md`](./docs/en.md) (affichée par Gladys dans l'écran de
-configuration).
+[`docs/en.md`](./docs/en.md) / [`docs/de.md`](./docs/de.md) /
+[`docs/es.md`](./docs/es.md) (affichée par Gladys dans l'écran de
+configuration). Les textes affichés (manifest, messages) existent en
+anglais, français, allemand et espagnol.
 
 ## Structure du projet
 
@@ -59,7 +61,7 @@ configuration).
 │     ├─ remote.js  plug.js  strip.js  sensor.js
 │     └─ index.js
 ├─ test/                             # tests node --test (+ faux appareil UDP)
-├─ docs/{fr,en}.md                   # doc utilisateur
+├─ docs/{fr,en,de,es}.md             # doc utilisateur
 ├─ gladys-assistant-integration.json # manifest
 └─ Dockerfile, .github/workflows/    # image multi-arch + release (du template)
 ```
