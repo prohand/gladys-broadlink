@@ -6,6 +6,10 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-23
+
+- Maintenance release, no functional change.
+
 ## [1.4.0] - 2026-10-13
 
 ### Added
@@ -96,7 +100,8 @@ First public release.
 
 - Add Broadlink external integration for Gladys Assistant
 
-[Unreleased]: https://github.com/prohand/gladys-broadlink/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/prohand/gladys-broadlink/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/prohand/gladys-broadlink/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/prohand/gladys-broadlink/compare/v1.3.3...v1.4.0
 [1.3.3]: https://github.com/prohand/gladys-broadlink/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/prohand/gladys-broadlink/compare/v1.3.1...v1.3.2
