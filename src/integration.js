@@ -14,6 +14,7 @@ import { buildDiscoveredDevices, deviceName, getBlueprint } from './devices/inde
 import { discoverDevices } from './discovery.js';
 import { learnIrCode, learnRfCode } from './learning.js';
 import { DeviceRegistry } from './registry.js';
+import { buildRemoteWidget, WIDGET_ACTIONS, WIDGETS } from './widgets.js';
 
 const logger = createLogger({ name: 'broadlink' });
 
@@ -30,6 +31,11 @@ export const ACTIONS = {
 // Manifest `scene_actions` key -> BroadlinkIntegration method (Gladys >= 5.1).
 export const SCENE_ACTIONS = {
   send_code: 'sendCode',
+};
+
+// Manifest `widgets` key -> [content method, action method] (Gladys >= 5.1).
+export const WIDGET_HANDLERS = {
+  [WIDGETS.REMOTE]: ['remoteWidget', 'remoteWidgetAction'],
 };
 
 // A device that stops answering has often only changed address (a DHCP lease
@@ -284,6 +290,7 @@ export class BroadlinkIntegration {
     }
     const entry = await this.codes.add(info.mac, name, code);
     await this.publish();
+    this.refreshWidgets();
     return {
       en: `Code "${entry.name}" learned (${code.length} bytes). ${DISCOVERY_HINT.en}`,
       fr: `Code « ${entry.name} » appris (${code.length} octets). ${DISCOVERY_HINT.fr}`,
@@ -296,6 +303,7 @@ export class BroadlinkIntegration {
     const { info } = this.resolveRemote(device);
     const entry = await this.codes.add(info.mac, name, parseCode(code));
     await this.publish();
+    this.refreshWidgets();
     return {
       en: `Code "${entry.name}" imported. ${DISCOVERY_HINT.en}`,
       fr: `Code « ${entry.name} » importé. ${DISCOVERY_HINT.fr}`,
@@ -332,6 +340,7 @@ export class BroadlinkIntegration {
       throw new Error(`No code named "${name}" on ${deviceName(info)}`);
     }
     await this.publish();
+    this.refreshWidgets();
     return {
       en: `Code "${name}" deleted. ${DISCOVERY_HINT.en}`,
       fr: `Code « ${name} » supprimé. ${DISCOVERY_HINT.fr}`,
@@ -357,6 +366,43 @@ export class BroadlinkIntegration {
       de: `${names.length} Code(s) auf ${deviceName(info)}: ${names.join(', ')}`,
       es: `${names.length} código(s) en ${deviceName(info)}: ${names.join(', ')}`,
     };
+  }
+
+  // --- Dashboard widget ------------------------------------------------------
+
+  /**
+   * Content of the "Broadlink remote" widget, built from memory: opening a
+   * dashboard never talks to the RM.
+   * @param {{ settings?: { remote?: string, codes?: string } }} [request]
+   */
+  remoteWidget({ settings = {} } = {}) {
+    const info = settings.remote
+      ? this.registry.findByGladysDevice(this.gladys, { external_id: settings.remote })
+      : null;
+    const codes = info?.kind === 'remote' ? this.codes.list(info.mac) : [];
+    return buildRemoteWidget(this.gladys, info ?? null, codes, settings);
+  }
+
+  /**
+   * A tap on the widget: a code button (the code in `params`) or the "More
+   * codes" form (the code and the repeat count in `values`, validated by the
+   * core). Resolves the toast shown to the user.
+   */
+  async remoteWidgetAction(actionKey, params = {}, { settings = {}, values } = {}) {
+    const known =
+      actionKey === WIDGET_ACTIONS.MORE || actionKey.startsWith(WIDGET_ACTIONS.CODE_PREFIX);
+    if (!known) throw new Error(`Unknown widget action "${actionKey}"`);
+    const name = values?.code ?? params.code;
+    if (!name) throw new Error('No code chosen');
+    return this.sendCode({ device: settings.remote, name, repeat: values?.repeat ?? 1 });
+  }
+
+  /** Ask the core to re-pull the widget (the list of codes changed). Never throws. */
+  refreshWidgets() {
+    if (typeof this.gladys.requestWidgetRefresh !== 'function') return;
+    Promise.resolve()
+      .then(() => this.gladys.requestWidgetRefresh(WIDGETS.REMOTE))
+      .catch((err) => logger.warn(`requestWidgetRefresh failed: ${err.message}`));
   }
 
   /** Summary of the known devices, for the "list devices" action. */

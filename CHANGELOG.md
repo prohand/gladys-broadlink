@@ -6,6 +6,17 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Dashboard widget "Broadlink remote": the codes of an RM remote as buttons (3 of your choice,
+  the others behind "More codes" with a repeat count), with its temperature and humidity.
+- Catalog search keywords (IR blaster, universal remote, RM4 pro, SP mini…).
+
+### Changed
+
+- Gladys 5.3.0 or newer is now required.
+- `@gladysassistant/integration-sdk` updated to 0.16.0.
+
 ## [1.4.1] - 2026-10-23
 
 - Maintenance release, no functional change.

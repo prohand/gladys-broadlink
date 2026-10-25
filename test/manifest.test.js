@@ -7,7 +7,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { ACTIONS, BroadlinkIntegration, SCENE_ACTIONS } from '../src/integration.js';
+import {
+  ACTIONS,
+  BroadlinkIntegration,
+  SCENE_ACTIONS,
+  WIDGET_HANDLERS,
+} from '../src/integration.js';
 import { DEFAULT_CONFIG } from '../src/config.js';
 import { BROADLINK_PORT } from '../src/broadlink/protocol.js';
 
@@ -15,6 +20,10 @@ const manifest = JSON.parse(
   await readFile(new URL('../gladys-assistant-integration.json', import.meta.url), 'utf8'),
 );
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+
+// Gladys shows the reader's language (en, fr, de, es) and falls back on `en`:
+// every text of the manifest carries all four, within the store's limits.
+const LANGUAGES = ['en', 'fr', 'de', 'es'];
 
 test('every manifest action has a registered handler', () => {
   for (const action of manifest.actions ?? []) {
@@ -37,6 +46,80 @@ test('every scene action has a registered handler', () => {
 test('scene actions require Gladys >= 5.1.0', () => {
   const [, major, minor] = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/).map(Number);
   assert.ok(major > 5 || (major === 5 && minor >= 1), manifest.gladys_version);
+});
+
+/** Minimum of the `gladys_version` range, as [major, minor, patch] numbers. */
+function gladysFloor() {
+  const match = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.(\d+)/);
+  assert.ok(match, 'gladys_version must declare a minimum version');
+  return match.slice(1).map(Number);
+}
+
+function floorAtLeast(major, minor) {
+  const [floorMajor, floorMinor] = gladysFloor();
+  return floorMajor > major || (floorMajor === major && floorMinor >= minor);
+}
+
+test('every widget has its content and action handlers', () => {
+  assert.ok(manifest.widgets.length > 0);
+  assert.deepEqual(manifest.widgets.map((w) => w.key).sort(), Object.keys(WIDGET_HANDLERS).sort());
+  for (const widget of manifest.widgets) {
+    for (const method of WIDGET_HANDLERS[widget.key]) {
+      assert.equal(typeof BroadlinkIntegration.prototype[method], 'function', method);
+    }
+    for (const lang of LANGUAGES) {
+      const { length } = widget.label[lang];
+      assert.ok(length >= 3 && length <= 30, `${widget.key}.label.${lang}: ${length}`);
+      assert.ok(widget.description[lang].length <= 100, `${widget.key}.description.${lang}`);
+    }
+    const remote = widget.settings.find((f) => f.key === 'remote');
+    assert.equal(remote.source, 'devices');
+  }
+  assert.ok(floorAtLeast(5, 1), 'widgets require Gladys >= 5.1.0');
+});
+
+test('keywords follow the store rules and require Gladys >= 5.3.0', () => {
+  const { keywords } = manifest;
+  assert.ok(Array.isArray(keywords) && keywords.length >= 1 && keywords.length <= 10);
+  const normalized = keywords.map((k) => k.trim().toLowerCase());
+  assert.equal(new Set(normalized).size, keywords.length, 'keywords must be unique');
+  for (const keyword of normalized) {
+    assert.ok(keyword.length >= 2 && keyword.length <= 30, `keyword "${keyword}"`);
+  }
+  assert.ok(floorAtLeast(5, 3), 'keywords require Gladys >= 5.3.0');
+});
+
+test('Broadlink is sold worldwide: no countries restriction', () => {
+  assert.equal(manifest.countries, undefined);
+});
+
+test('the 5.3 fields (keywords, countries, music) require Gladys >= 5.3.0', () => {
+  if (['keywords', 'countries', 'music'].some((field) => field in manifest)) {
+    assert.ok(floorAtLeast(5, 3), manifest.gladys_version);
+  }
+});
+
+test('categories come from the store vocabulary', () => {
+  const vocabulary = [
+    'climate',
+    'lighting',
+    'energy',
+    'security',
+    'multimedia',
+    'appliances',
+    'environment',
+    'protocols',
+    'network',
+    'notifications',
+    'assistants',
+    'services',
+    'transport',
+    'vehicles',
+    'servers',
+    'leisure',
+  ];
+  assert.equal(new Set(manifest.categories).size, manifest.categories.length);
+  for (const category of manifest.categories) assert.ok(vocabulary.includes(category), category);
 });
 
 test('the mediated scan is declared on the Broadlink port', () => {
@@ -105,10 +188,6 @@ test('dynamic selects declare a source and no static options', () => {
 test('Broadlink is declared local-only', () => {
   assert.deepEqual(manifest.transports, ['local']);
 });
-
-// Gladys shows the reader's language (en, fr, de, es) and falls back on `en`:
-// every text of the manifest carries all four, within the store's limits.
-const LANGUAGES = ['en', 'fr', 'de', 'es'];
 
 function multiLanguageTexts(node, path = '$', found = []) {
   if (Array.isArray(node)) {

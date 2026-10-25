@@ -15,7 +15,12 @@
 // -----------------------------------------------------------------------------
 
 import { GladysIntegration, logger } from '@gladysassistant/integration-sdk';
-import { ACTIONS, BroadlinkIntegration, SCENE_ACTIONS } from './src/integration.js';
+import {
+  ACTIONS,
+  BroadlinkIntegration,
+  SCENE_ACTIONS,
+  WIDGET_HANDLERS,
+} from './src/integration.js';
 
 const gladys = new GladysIntegration();
 const broadlink = new BroadlinkIntegration(gladys);
@@ -68,6 +73,15 @@ for (const [key, method] of Object.entries(SCENE_ACTIONS)) {
   gladys.onSceneAction(key, async (fields = {}) => {
     await broadlink[method](fields);
   });
+}
+
+// --- Dashboard widget: a virtual remote (Gladys >= 5.1) ----------------------
+// The content is built from memory; a tap on a button sends the code.
+for (const [key, [getMethod, actionMethod]] of Object.entries(WIDGET_HANDLERS)) {
+  gladys.onWidgetGet(key, (request) => broadlink[getMethod](request));
+  gladys.onWidgetAction(key, (actionKey, params, context) =>
+    broadlink[actionMethod](actionKey, params, context),
+  );
 }
 
 // --- Configuration updated by the user ---------------------------------------

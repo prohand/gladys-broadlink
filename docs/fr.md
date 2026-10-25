@@ -20,7 +20,7 @@ votre réseau (UDP, port 80).
 
 ## Avant de commencer
 
-Il faut **Gladys 5.1.0 ou plus récent**.
+Il faut **Gladys 5.3.0 ou plus récent**.
 
 1. Installez vos appareils sur votre Wi-Fi avec l'application **Broadlink**
    (ou BroadLink / IHC).
@@ -89,6 +89,21 @@ le bouton apparaisse (ou disparaisse).
 
 Les codes sont stockés dans le volume de données de l'intégration
 (`/data/codes.json`) : ils survivent aux mises à jour.
+
+## Widget de tableau de bord
+
+Ajoutez le widget **Télécommande Broadlink** à un tableau de bord et choisissez
+une télécommande : il affiche ses codes en boutons, ainsi que sa température
+et son humidité quand elle a le capteur. Un appui envoie le code une fois.
+
+- **Codes affichés en boutons** (optionnel) : jusqu'à 3 noms de codes séparés
+  par des virgules (par ex. `TV on, Vol+, Vol-`). Vide : les 3 premiers codes
+  de la télécommande.
+- **Autres codes** : les autres codes, dans une liste, avec le nombre d'envois
+  du code choisi.
+
+Le widget peut envoyer un code dès qu'il est appris ou importé : inutile de
+mettre d'abord l'appareil à jour dans l'onglet **Découverte**.
 
 ## Réglages
 
