@@ -6,6 +6,8 @@ All notable changes to this integration are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-25
+
 ### Added
 
 - Dashboard widget "Broadlink remote": the codes of an RM remote as buttons (3 of your choice,
@@ -111,7 +113,8 @@ First public release.
 
 - Add Broadlink external integration for Gladys Assistant
 
-[Unreleased]: https://github.com/prohand/gladys-broadlink/compare/v1.4.1...HEAD
+[Unreleased]: https://github.com/prohand/gladys-broadlink/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/prohand/gladys-broadlink/compare/v1.4.1...v1.5.0
 [1.4.1]: https://github.com/prohand/gladys-broadlink/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/prohand/gladys-broadlink/compare/v1.3.3...v1.4.0
 [1.3.3]: https://github.com/prohand/gladys-broadlink/compare/v1.3.2...v1.3.3
