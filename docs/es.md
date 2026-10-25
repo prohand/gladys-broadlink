@@ -21,7 +21,7 @@ dispositivos de su red (UDP, puerto 80).
 
 ## Antes de empezar
 
-Se necesita **Gladys 5.1.0 o posterior**.
+Se necesita **Gladys 5.3.0 o posterior**.
 
 1. Configure sus dispositivos en su Wi-Fi con la app **Broadlink**.
 2. En la app, abra los ajustes de cada dispositivo y **desactive «Bloquear
@@ -87,6 +87,21 @@ aparezca (o desaparezca).
 
 Los códigos se guardan en el volumen de datos de la integración
 (`/data/codes.json`): sobreviven a las actualizaciones.
+
+## Widget del panel
+
+Añada el widget **Mando Broadlink** a un panel y elija un mando: muestra sus
+códigos como botones, además de su temperatura y humedad cuando tiene el
+sensor. Una pulsación envía el código una vez.
+
+- **Códigos mostrados como botones** (opcional): hasta 3 nombres de códigos
+  separados por comas (p. ej. `TV on, Vol+, Vol-`). Vacío: los 3 primeros
+  códigos del mando.
+- **Más códigos**: los demás códigos, en una lista, con el número de envíos
+  del código elegido.
+
+El widget puede enviar un código en cuanto se aprende o se importa: no hace
+falta actualizar antes el dispositivo en la pestaña **Descubrir**.
 
 ## Ajustes
 

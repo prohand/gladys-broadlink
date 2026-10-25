@@ -2,7 +2,7 @@
 
 Intégration externe [Gladys Assistant](https://gladysassistant.com) pour les
 appareils **Broadlink**, 100 % locale (aucun compte ni cloud Broadlink).
-Nécessite **Gladys ≥ 5.1.0**.
+Nécessite **Gladys ≥ 5.3.0**.
 
 Construite à partir du template officiel
 [`GladysAssistant/integration-template-js`](https://github.com/GladysAssistant/integration-template-js)
@@ -25,7 +25,10 @@ dépendance en plus du SDK).
     tableau de bord et dans les scènes ;
   - action de scène « Envoyer un code Broadlink » (code par son nom,
     répétitions) ;
-  - température / humidité (RM pro, RM4 + câble HTS2).
+  - température / humidité (RM pro, RM4 + câble HTS2) ;
+  - widget de tableau de bord « Télécommande Broadlink » : les codes d'une
+    télécommande en boutons (3 au choix + « Autres codes »), avec sa
+    température et son humidité.
 - **Badge « local »** (manifest `transports: ["local"]`) : chaque appareil
   est affiché « local » ou « injoignable » selon qu'il répond.
 - **Prises SP** (SP1, SP2, SP mini, SP3, SP3S, SP4…) : marche/arrêt avec

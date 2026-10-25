@@ -21,7 +21,7 @@ keine Cloud. Die Integration spricht direkt mit den Geräten in deinem Netzwerk
 
 ## Bevor du beginnst
 
-**Gladys 5.1.0 oder neuer** ist erforderlich.
+**Gladys 5.3.0 oder neuer** ist erforderlich.
 
 1. Richte deine Geräte mit der **Broadlink**-App in deinem WLAN ein.
 2. Öffne in der App die Einstellungen jedes Geräts und **schalte
@@ -89,6 +89,21 @@ damit der Taster erscheint (oder verschwindet).
 
 Die Codes werden im Datenvolume der Integration gespeichert
 (`/data/codes.json`): Sie überstehen Updates.
+
+## Dashboard-Widget
+
+Füge das Widget **Broadlink-Fernbedienung** zu einem Dashboard hinzu und wähle
+eine Fernbedienung: Es zeigt ihre Codes als Tasten sowie Temperatur und
+Luftfeuchtigkeit, wenn sie den Sensor hat. Ein Tippen sendet den Code einmal.
+
+- **Als Tasten angezeigte Codes** (optional): bis zu 3 Codenamen, durch Kommas
+  getrennt (z. B. `TV an, Vol+, Vol-`). Leer: die ersten 3 Codes der
+  Fernbedienung.
+- **Weitere Codes**: die übrigen Codes in einer Liste, mit der Anzahl, wie oft
+  der gewählte Code gesendet wird.
+
+Das Widget kann einen Code senden, sobald er angelernt oder importiert ist: Du
+musst das Gerät dafür nicht erst im Tab **Entdecken** aktualisieren.
 
 ## Einstellungen
 

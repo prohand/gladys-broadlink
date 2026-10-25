@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A Gladys Assistant **external integration** (Node 22+, ESM, no build step, one runtime
 dependency: `@gladysassistant/integration-sdk`) for **Broadlink** devices, 100 % local (no
 Broadlink account or cloud). The Broadlink protocol is re-implemented in plain JavaScript after
-[python-broadlink](https://github.com/mjg59/python-broadlink). Requires Gladys 5.1.0+.
+[python-broadlink](https://github.com/mjg59/python-broadlink). Requires Gladys 5.3.0+.
 
 Supported: RM universal remotes (learn/import IR and RF codes, each code becomes a momentary
 button, temperature/humidity on RM pro / RM4 + HTS2), SP plugs (on/off, power on SP2S/SP3S/SP4B),
@@ -33,7 +33,8 @@ builds). Never bump versions by hand.
 
 ```
 index.js                 SDK wiring only (handlers before connect())
-src/integration.js       BroadlinkIntegration: scan, commands, poll, manifest + scene actions
+src/integration.js       BroadlinkIntegration: scan, commands, poll, manifest + scene actions, widget
+src/widgets.js           the "Broadlink remote" dashboard widget (pure content)
 src/discovery.js         discovery: core-side broadcast (manifest network_discovery) + manual IPs
 src/registry.js          known devices (from scans and from Gladys devices) + one client each
 src/codes.js             IR/RF code store, JSON in /data, keyed by remote MAC
@@ -69,20 +70,26 @@ src/devices/             one blueprint per Gladys device kind: remote, plug, str
 - **`codes.json` writes are serialized**; an unreadable file is renamed `.bad-<date>` and the
   store starts empty instead of failing the initialization.
 - **Polling**: Gladys `poll_frequency` is an enum in MILLISECONDS (1000, 2000, 10000, 15000,
-  30000, 60000); any other value rejects the WHOLE discovery batch, and Gladys only polls a
-  device that also carries `should_poll: true`. The configured interval (`poll_frequency`,
+  30000, 60000); any other value rejects the WHOLE discovery batch. Gladys 5.3+ sets
+  `should_poll` itself when `poll_frequency` is present; older cores only polled a device that
+  also carried `should_poll: true`, so it stays published. The configured interval (`poll_frequency`,
   10–3600 s) is in seconds and must never be published as is.
 - **Transport badge** (`transports: ["local"]`): `local` or `unreachable`, updated by `track()`
   around every command and poll.
 - **Every feature declares `min`/`max`** (NOT NULL in Gladys).
 - **`/data` is the only writable path** (`BROADLINK_DATA_DIR` overrides it for tests); writes are
   atomic (tmp + rename).
-- Action keys and the scene action `send_code` are stored by users: never rename them.
+- Action keys, the scene action `send_code` and the widget `remote` (key, settings, action keys)
+  are stored by users: never rename them.
+- **The `remote` widget is built from memory** (`src/widgets.js`, registry + code store): opening a
+  dashboard never talks to the RM. Its buttons are widget actions through `sendCode`, never
+  `device_feature` buttons (a new code is not a feature until the user updates the device).
 
 ### Manifest
 
 `test/manifest.test.js` keeps `gladys-assistant-integration.json` in sync with `DEFAULT_CONFIG`,
-the bounds, `ACTIONS` and `SCENE_ACTIONS`.
+the bounds, `ACTIONS`, `SCENE_ACTIONS` and `WIDGET_HANDLERS`, and pins the store rules of the
+5.3 fields (`keywords`, `categories` vocabulary, `gladys_version >= 5.3.0`).
 
 ## Testing
 

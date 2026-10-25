@@ -50,8 +50,9 @@ export function buildDevice(gladys, info, ctx) {
   };
   if (pollFrequency) {
     // `pollFrequency` is the configured interval in seconds: Gladys wants one of
-    // its own ticks, in milliseconds, and only polls a device that also asks
-    // for it with `should_poll` (false by default in the core).
+    // its own ticks, in milliseconds. Gladys 5.3+ turns `should_poll` on by
+    // itself when `poll_frequency` is present; older cores only polled a device
+    // that also asked for it, and the flag is harmless, so it stays.
     device.should_poll = true;
     device.poll_frequency = gladysPollFrequency(pollFrequency);
   }

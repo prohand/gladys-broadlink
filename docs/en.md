@@ -20,7 +20,7 @@ port 80).
 
 ## Before you start
 
-**Gladys 5.1.0 or newer** is required.
+**Gladys 5.3.0 or newer** is required.
 
 1. Set up your devices on your Wi-Fi with the **Broadlink** app.
 2. In the app, open the settings of each device and **turn "Lock device"
@@ -84,6 +84,20 @@ click **Update** on the remote so the button appears (or disappears).
 
 Codes are stored in the data volume of the integration (`/data/codes.json`):
 they survive updates.
+
+## Dashboard widget
+
+Add the **Broadlink remote** widget to a dashboard and pick a remote: it shows
+the codes of that remote as buttons, plus its temperature and humidity when it
+has the sensor. A tap sends the code once.
+
+- **Codes shown as buttons** (optional): up to 3 code names separated by
+  commas (e.g. `TV on, Vol+, Vol-`). Empty: the first 3 codes of the remote.
+- **More codes**: the other codes, in a list, with how many times to send
+  the chosen one.
+
+The widget works with a code as soon as it is learned or imported: no need to
+update the device in the **Discover** tab first.
 
 ## Settings
 

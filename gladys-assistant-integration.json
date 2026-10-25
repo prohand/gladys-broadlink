@@ -10,9 +10,21 @@
   },
   "version": "1.4.1",
   "docker_image": "ghcr.io/prohand/gladys-broadlink:1.4.1",
-  "gladys_version": ">=5.1.0",
+  "gladys_version": ">=5.3.0",
   "cover_image": "https://raw.githubusercontent.com/prohand/gladys-broadlink/main/cover.jpg",
   "categories": ["multimedia", "appliances", "energy"],
+  "keywords": [
+    "ir blaster",
+    "infrarouge",
+    "télécommande",
+    "433 mhz",
+    "rm4 pro",
+    "rm4 mini",
+    "rm mini 3",
+    "sp mini",
+    "smart plug",
+    "universal remote"
+  ],
   "transports": ["local"],
   "network_discovery": [
     {
@@ -384,6 +396,62 @@
           "max": 10
         }
       ]
+    }
+  ],
+  "widgets": [
+    {
+      "key": "remote",
+      "label": {
+        "en": "Broadlink remote",
+        "fr": "Télécommande Broadlink",
+        "de": "Broadlink-Fernbedienung",
+        "es": "Mando Broadlink"
+      },
+      "description": {
+        "en": "The codes of an RM remote as buttons, with its temperature and humidity.",
+        "fr": "Les codes d'une télécommande RM en boutons, avec sa température et son humidité.",
+        "de": "Die Codes einer RM-Fernbedienung als Tasten, mit Temperatur und Luftfeuchtigkeit.",
+        "es": "Los códigos de un mando RM como botones, con su temperatura y humedad."
+      },
+      "icon": "radio",
+      "settings": [
+        {
+          "key": "remote",
+          "type": "select",
+          "source": "devices",
+          "label": {
+            "en": "Remote",
+            "fr": "Télécommande",
+            "de": "Fernbedienung",
+            "es": "Mando"
+          },
+          "required": true
+        },
+        {
+          "key": "codes",
+          "type": "string",
+          "label": {
+            "en": "Codes shown as buttons (optional)",
+            "fr": "Codes affichés en boutons (optionnel)",
+            "de": "Als Tasten angezeigte Codes (optional)",
+            "es": "Códigos mostrados como botones (opcional)"
+          },
+          "description": {
+            "en": "Up to 3 code names, separated by commas. Empty: the first 3. The others stay in \"More codes\".",
+            "fr": "Jusqu'à 3 noms de codes, séparés par des virgules. Vide : les 3 premiers. Les autres restent dans « Autres codes ».",
+            "de": "Bis zu 3 Codenamen, durch Kommas getrennt. Leer: die ersten 3. Die anderen bleiben unter „Weitere Codes“.",
+            "es": "Hasta 3 nombres de códigos, separados por comas. Vacío: los 3 primeros. Los demás quedan en «Más códigos»."
+          },
+          "placeholder": {
+            "en": "TV on, Vol+, Vol-",
+            "fr": "TV on, Vol+, Vol-",
+            "de": "TV an, Vol+, Vol-",
+            "es": "TV on, Vol+, Vol-"
+          },
+          "required": false
+        }
+      ],
+      "action_timeout_seconds": 30
     }
   ]
 }
